@@ -611,6 +611,17 @@ config ARCH_PNX4008
 	help
 	  This enables support for Philips PNX4008 mobile platform.
 
+config ARCH_PICOXCELL
+	bool "Picochip picoXcell"
+	select ARM_VIC
+	select GENERIC_CLOCKEVENTS
+	select HAVE_SCHED_CLOCK
+	select CPU_V6K
+	select HAVE_TCM
+	help
+	  This enables support for systems based on the Picochip picoXcell
+	  family of Femtocell devices.
+
 config ARCH_PXA
 	bool "PXA2xx/PXA3xx-based"
 	depends on MMU
@@ -962,6 +973,8 @@ source "arch/arm/mach-omap1/Kconfig"
 source "arch/arm/mach-omap2/Kconfig"
 
 source "arch/arm/mach-orion5x/Kconfig"
+
+source "arch/arm/mach-picoxcell/Kconfig"
 
 source "arch/arm/mach-pxa/Kconfig"
 source "arch/arm/plat-pxa/Kconfig"
