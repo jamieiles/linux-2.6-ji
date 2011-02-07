@@ -97,6 +97,7 @@ static void report_chipinfo(void)
 void __init picoxcell_init_early(void)
 {
 	axi2cfg_init();
+	picoxcell_sched_clock_init();
 }
 
 void __init picoxcell_core_init(void)

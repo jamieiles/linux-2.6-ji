@@ -13,10 +13,13 @@
 #define __ASM_ARCH_PICOXCELL_CORE_H__
 
 struct picoxcell_soc;
+struct sys_timer;
 
 extern void picoxcell_init_early(void);
 extern void picoxcell_core_init(void);
 extern void picoxcell_init_irq(void);
 extern void picoxcell_map_io(void);
+extern struct sys_timer picoxcell_sys_timer;
+extern void picoxcell_sched_clock_init(void);
 
 #endif /* __ASM_ARCH_PICOXCELL_CORE_H__ */
