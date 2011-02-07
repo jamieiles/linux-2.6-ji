@@ -58,4 +58,15 @@ static inline int picoxcell_cpufreq_init(unsigned long min_freq_khz,
 }
 #endif /* CONFIG_CPU_FREQ */
 
+#ifdef CONFIG_PM
+extern int picoxcell_init_pm(void (*enter_lowpower)(void),
+			     void (*exit_lowpower)(void));
+#else /* CONFIG_PM */
+static inline int picoxcell_init_pm(void (*enter_lowpower)(void),
+				    void (*exit_lowpower)(void))
+{
+	return 0;
+}
+#endif /* CONFIG_PM */
+
 #endif /* __PICOXCELL_SOC_H__ */
