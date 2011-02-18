@@ -1,0 +1,109 @@
+/*
+ * linux/arch/arm/mach-picoxcell/board_pc7302.c
+ *
+ * Copyright (c) 2010 Picochip Ltd., Jamie Iles
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ *
+ * All enquiries to support@picochip.com
+ */
+#include <linux/gpio.h>
+#include <linux/interrupt.h>
+#include <linux/io.h>
+#include <linux/platform_device.h>
+#include <linux/mtd/physmap.h>
+#include <linux/spi/flash.h>
+
+#include <mach/hardware.h>
+#include <asm/leds.h>
+#include <asm/mach-types.h>
+#include <asm/mach/arch.h>
+
+#include "picoxcell_core.h"
+
+static long pc7302_panic_blink(int state)
+{
+	__raw_writel(state ? 0xFF : 0, IO_ADDRESS(PICOXCELL_GPIO_BASE +
+					    GPIO_SW_PORT_C_DR_REG_OFFSET));
+	return 0;
+}
+
+static void pc7302_panic_init(void)
+{
+	/*
+	 * We have a BOOT_ERROR pin on PC7302. Reuse that for signalling when
+	 * the kernel panics. There is only 1 bit wired up to port C but it
+	 * won't hurt to configure all of them.
+	 */
+	__raw_writel(0xF, IO_ADDRESS(PICOXCELL_GPIO_BASE +
+			       GPIO_SW_PORT_C_DDR_REG_OFFSET));
+	__raw_writel(0x0, IO_ADDRESS(PICOXCELL_GPIO_BASE +
+			       GPIO_SW_PORT_C_CTL_REG_OFFSET));
+
+	panic_blink = pc7302_panic_blink;
+}
+
+static struct mtd_partition pc7302_nor_partitions[] = {
+	{
+		.name		= "Boot",
+		.size		= SZ_128K,
+		.offset		= 0,
+	},
+	{
+		.name		= "Boot Environment",
+		.size		= SZ_128K,
+		.offset		= MTDPART_OFS_APPEND,
+	},
+	{
+		.name		= "Kernel",
+		.size		= SZ_4M,
+		.offset		= MTDPART_OFS_APPEND,
+	},
+	{
+		.name		= "Application",
+		.size		= MTDPART_SIZ_FULL,
+		.offset		= MTDPART_OFS_APPEND,
+	},
+};
+
+static struct physmap_flash_data pc7302_nor_flash_data = {
+	.width		= 1,
+	.parts		= pc7302_nor_partitions,
+	.nr_parts	= ARRAY_SIZE(pc7302_nor_partitions)
+};
+
+static struct resource pc7302_nor_resource = {
+	.start	= PICOXCELL_FLASH_BASE,
+	.end	= PICOXCELL_FLASH_BASE + SZ_128M - 1,
+	.flags	= IORESOURCE_MEM,
+};
+
+static struct platform_device pc7302_nor = {
+	.name		    = "physmap-flash",
+	.id		    = -1,
+	.dev.platform_data  = &pc7302_nor_flash_data,
+	.resource	    = &pc7302_nor_resource,
+	.num_resources	    = 1,
+};
+
+static void pc7302_init_nor(void)
+{
+	platform_device_register(&pc7302_nor);
+}
+
+static void __init pc7302_init(void)
+{
+	picoxcell_core_init();
+	pc7302_init_nor();
+	pc7302_panic_init();
+}
+
+MACHINE_START(PC7302, "PC7302")
+	.map_io		= picoxcell_map_io,
+	.init_irq	= picoxcell_init_irq,
+	.init_early	= picoxcell_init_early,
+	.timer		= &picoxcell_sys_timer,
+	.init_machine	= pc7302_init,
+MACHINE_END
