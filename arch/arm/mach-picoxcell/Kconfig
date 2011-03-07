@@ -2,6 +2,13 @@ if ARCH_PICOXCELL
 
 comment "Picochip SoC device support"
 
+config PICOXCELL_PC3X2
+	bool "Support PC3x2 devices"
+	default y
+	help
+	  Include support for picoChip PC3x2 family of devices. This
+	  includes PC302 and PC312.
+
 comment "Picochip picoXcell board selection"
 
 config BOARD_PC7302

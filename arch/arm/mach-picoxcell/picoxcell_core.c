@@ -26,6 +26,10 @@ struct picoxcell_soc *picoxcell_get_soc(void)
 		__raw_readl(IO_ADDRESS(PICOXCELL_AXI2CFG_BASE +
 				       AXI2CFG_DEVICE_ID_REG_OFFSET));
 	switch (device_id) {
+	case 0x8003:
+	case 0x8007:
+		return &pc3x2_soc;
+
 	default:
 		panic("unsupported device type %lx", device_id);
 	}
