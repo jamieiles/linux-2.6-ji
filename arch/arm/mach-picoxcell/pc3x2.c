@@ -7,6 +7,7 @@
  *
  * All enquiries to support@picochip.com
  */
+#include <linux/gpio.h>
 #include <linux/io.h>
 #include <linux/irq.h>
 #include <linux/kernel.h>
@@ -15,6 +16,7 @@
 #include <mach/clkdev.h>
 #include <mach/hardware.h>
 
+#include "mux.h"
 #include "picoxcell_core.h"
 #include "soc.h"
 
@@ -39,6 +41,31 @@ static void pc3x2_clk_init(void)
 	picoxcell_clk_add(&dummy_clk);
 	clkdev_add_table(pc3x2_clk_lookup, ARRAY_SIZE(pc3x2_clk_lookup));
 }
+
+static struct mux_def pc3x2_mux[] = {
+	/*	Name		ARM	SD	PERIPH	CAEID	CADDR	MASK*/
+	MUXCFGBUS(sdgpio4,	-1,	4,	PAI,	0x8080,	0x9,	0x7),
+	MUXCFGBUS(sdgpio5,	-1,	5,	PAI,	0x8080,	0x9,	0x6),
+	MUXCFGBUS(sdgpio6,	-1,	6,	PAI,	0x8080,	0x9,	0x5),
+	MUXCFGBUS(sdgpio7,	-1,	7,	PAI,	0x8080,	0x9,	0x4),
+
+	MUXCFGBUS(arm4,		4,	-1,	PAI,	0x8080,	0x9,	0xb),
+	MUXCFGBUS(arm5,		5,	-1,	PAI,	0x8080,	0x9,	0xa),
+	MUXCFGBUS(arm6,		6,	-1,	PAI,	0x8080,	0x9,	0x9),
+	MUXCFGBUS(arm7,		7,	-1,	PAI,	0x8080,	0x9,	0x8),
+
+	/*	Name		ARM	SD	PERIPH	REG	BIT	PERREG	PERBIT	FLAGS */
+	MUXGPIO(shared0,	8,	8,	FRACN,	0,	16,	0,	7,	0),
+	MUXGPIO(shared1,	9,	9,	RSVD,	0,	17,	-1,	-1,	0),
+	MUXGPIO(shared2,	10,	10,	RSVD,	0,	18,	-1,	-1,	0),
+	MUXGPIO(shared3,	11,	11,	RSVD,	0,	19,	-1,	-1,	0),
+	MUXGPIO(shared4,	12,	12,	RSVD,	0,	20,	-1,	-1,	0),
+	MUXGPIO(shared5,	13,	13,	RSVD,	0,	21,	-1,	-1,	0),
+	MUXGPIO(shared6,	14,	14,	RSVD,	0,	22,	-1,	-1,	0),
+	MUXGPIO(shared7,	15,	15,	RSVD,	0,	23,	-1,	-1,	0),
+
+	MUXGPIO(sdgpio0,	-1,	0,	FRACN,	-1,	-1,	0,	7,	MUX_INVERT_PERIPH),
+};
 
 static const struct picoxcell_timer pc3x2_timers[] = {
 	{
@@ -84,4 +111,5 @@ struct picoxcell_soc pc3x2_soc = {
 
 static void pc3x2_init(void)
 {
+	picoxcell_mux_register(pc3x2_mux, ARRAY_SIZE(pc3x2_mux));
 }
