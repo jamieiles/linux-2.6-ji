@@ -96,6 +96,40 @@
 #ifndef __ASSEMBLY__
 
 /*
+ * axi2cfg_config_read - Read a number of 16 bit words from a picoArray axi2cfg.
+ *
+ * Returns the number of words read on success, negative errno on failure.
+ *
+ * @axi2cfg_base: The base address of the upper axi2cfg.
+ * @aeid: The CAEID of the AE to read from.
+ * @ae_addr: The address to begin reading from within the AE.
+ * @buf: The buffer to store the results in.
+ * @count: The number of 16 bit words to read.
+ */
+extern int axi2cfg_config_read(u16 aeid, u16 ae_addr, u16 *buf, u16 count);
+
+/*
+ * axi2cfg_config_write - Write a number of 16 bit words to a picoArray axi2cfg.
+ *
+ * @axi2cfg_base: The base address of the upper axi2cfg.
+ * @aeid: The CAEID of the AE to write to.
+ * @ae_addr: The address to begin writing to within the AE.
+ * @buf: The buffer to read the words from.
+ * @count: The number of 16 bit words to write.
+ */
+extern void axi2cfg_config_write(u16 aeid, u16 ae_addr, const u16 *buf,
+				 u16 count);
+
+/*
+ * ax2cfg_write_buf - Write a series of configuration words to the AXI2CFG
+ *	config write port.
+ *
+ * @buf: The buffer to write.
+ * @nr_words: The number of 32 bit words to write.
+ */
+extern void axi2cfg_write_buf(const u32 *buf, unsigned nr_words);
+
+/*
  * axi2cfg_init - initialize the AXI2CFG hardware.
  */
 extern void axi2cfg_init(void);
