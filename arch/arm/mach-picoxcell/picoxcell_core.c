@@ -30,6 +30,11 @@ struct picoxcell_soc *picoxcell_get_soc(void)
 	case 0x8007:
 		return &pc3x2_soc;
 
+	case 0x20:
+	case 0x21:
+	case 0x22:
+		return &pc3x3_soc;
+
 	default:
 		panic("unsupported device type %lx", device_id);
 	}
