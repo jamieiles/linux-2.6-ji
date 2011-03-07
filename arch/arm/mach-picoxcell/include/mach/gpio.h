@@ -1,0 +1,176 @@
+/*
+ * Copyright (c) 2010 Picochip Ltd., Jamie Iles
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+#ifndef __MACH_GPIO_H__
+#define __MACH_GPIO_H__
+
+enum {
+	PC3X2_GPIO_PIN_SDGPIO_INV	= -9,	/* Invalid */
+	PC3X2_GPIO_PIN_ARM_INV,
+
+	PC3X2_GPIO_PIN_ARM_0		= 0,
+	PC3X2_GPIO_PIN_ARM_1,
+	PC3X2_GPIO_PIN_ARM_2,
+	PC3X2_GPIO_PIN_ARM_3,
+	PC3X2_GPIO_PIN_ARM_4,
+	PC3X2_GPIO_PIN_ARM_5,
+	PC3X2_GPIO_PIN_ARM_6,
+	PC3X2_GPIO_PIN_ARM_7,
+	PC3X2_GPIO_PIN_SDGPIO_0,
+	PC3X2_GPIO_PIN_SDGPIO_1,
+	PC3X2_GPIO_PIN_SDGPIO_2,
+	PC3X2_GPIO_PIN_SDGPIO_3,
+	PC3X2_GPIO_PIN_SDGPIO_4,
+	PC3X2_GPIO_PIN_SDGPIO_5,
+	PC3X2_GPIO_PIN_SDGPIO_6,
+	PC3X2_GPIO_PIN_SDGPIO_7,
+	PC3X2_GPIO_PIN_ARM_8,
+	PC3X2_GPIO_PIN_ARM_9,
+	PC3X2_GPIO_PIN_ARM_10,
+	PC3X2_GPIO_PIN_ARM_11,
+	PC3X2_GPIO_PIN_ARM_12,
+	PC3X2_GPIO_PIN_ARM_13,
+	PC3X2_GPIO_PIN_ARM_14,
+	PC3X2_GPIO_PIN_ARM_15,
+	PC3X2_GPIO_PIN_SDGPIO_8,
+	PC3X2_GPIO_PIN_SDGPIO_9,
+	PC3X2_GPIO_PIN_SDGPIO_10,
+	PC3X2_GPIO_PIN_SDGPIO_11,
+	PC3X2_GPIO_PIN_SDGPIO_12,
+	PC3X2_GPIO_PIN_SDGPIO_13,
+	PC3X2_GPIO_PIN_SDGPIO_14,
+	PC3X2_GPIO_PIN_SDGPIO_15,
+};
+
+enum {
+	PC3X3_GPIO_PIN_SDGPIO_INV	= -9,
+	PC3X3_GPIO_PIN_ARM_INV,
+	PC3X3_GPIO_PIN_ARM_0		= 0,
+	PC3X3_GPIO_PIN_ARM_1,
+	PC3X3_GPIO_PIN_ARM_2,
+	PC3X3_GPIO_PIN_ARM_3,
+	PC3X3_GPIO_PIN_ARM_4,
+	PC3X3_GPIO_PIN_ARM_5,
+	PC3X3_GPIO_PIN_ARM_6,
+	PC3X3_GPIO_PIN_ARM_7,
+	PC3X3_GPIO_PIN_ARM_8,
+	PC3X3_GPIO_PIN_ARM_9,
+	PC3X3_GPIO_PIN_ARM_10,
+	PC3X3_GPIO_PIN_ARM_11,
+	PC3X3_GPIO_PIN_ARM_12,
+	PC3X3_GPIO_PIN_ARM_13,
+	PC3X3_GPIO_PIN_ARM_14,
+	PC3X3_GPIO_PIN_ARM_15,
+	PC3X3_GPIO_PIN_ARM_16,
+	PC3X3_GPIO_PIN_ARM_17,
+	PC3X3_GPIO_PIN_ARM_18,
+	PC3X3_GPIO_PIN_ARM_19,
+	PC3X3_GPIO_PIN_ARM_20,
+	PC3X3_GPIO_PIN_ARM_21,
+	PC3X3_GPIO_PIN_ARM_22,
+	PC3X3_GPIO_PIN_ARM_23,
+	PC3X3_GPIO_PIN_ARM_24,
+	PC3X3_GPIO_PIN_ARM_25,
+	PC3X3_GPIO_PIN_ARM_26,
+	PC3X3_GPIO_PIN_ARM_27,
+	PC3X3_GPIO_PIN_ARM_28,
+	PC3X3_GPIO_PIN_ARM_29,
+	PC3X3_GPIO_PIN_ARM_30,
+	PC3X3_GPIO_PIN_ARM_31,
+	PC3X3_GPIO_PIN_ARM_32,
+	PC3X3_GPIO_PIN_ARM_33,
+	PC3X3_GPIO_PIN_ARM_34,
+	PC3X3_GPIO_PIN_ARM_35,
+	PC3X3_GPIO_PIN_ARM_36,
+	PC3X3_GPIO_PIN_ARM_37,
+	PC3X3_GPIO_PIN_ARM_38,
+	PC3X3_GPIO_PIN_ARM_39,
+	PC3X3_GPIO_PIN_ARM_40,
+	PC3X3_GPIO_PIN_ARM_41,
+	PC3X3_GPIO_PIN_ARM_42,
+	PC3X3_GPIO_PIN_ARM_43,
+	PC3X3_GPIO_PIN_ARM_44,
+	PC3X3_GPIO_PIN_ARM_45,
+	PC3X3_GPIO_PIN_ARM_46,
+	PC3X3_GPIO_PIN_ARM_47,
+	PC3X3_GPIO_PIN_ARM_48,
+	PC3X3_GPIO_PIN_ARM_49,
+	PC3X3_GPIO_PIN_ARM_50,
+	PC3X3_GPIO_PIN_ARM_51,
+	PC3X3_GPIO_PIN_ARM_52,
+	PC3X3_GPIO_PIN_ARM_53,
+	PC3X3_GPIO_PIN_SDGPIO_0,
+	PC3X3_GPIO_PIN_SDGPIO_1,
+	PC3X3_GPIO_PIN_SDGPIO_2,
+	PC3X3_GPIO_PIN_SDGPIO_3,
+	PC3X3_GPIO_PIN_SDGPIO_4,
+	PC3X3_GPIO_PIN_SDGPIO_5,
+	PC3X3_GPIO_PIN_SDGPIO_6,
+	PC3X3_GPIO_PIN_SDGPIO_7,
+	PC3X3_GPIO_PIN_SDGPIO_8,
+	PC3X3_GPIO_PIN_SDGPIO_9,
+	PC3X3_GPIO_PIN_SDGPIO_10,
+	PC3X3_GPIO_PIN_SDGPIO_11,
+	PC3X3_GPIO_PIN_SDGPIO_12,
+	PC3X3_GPIO_PIN_SDGPIO_13,
+	PC3X3_GPIO_PIN_SDGPIO_14,
+	PC3X3_GPIO_PIN_SDGPIO_15,
+	PC3X3_GPIO_PIN_SDGPIO_16,
+	PC3X3_GPIO_PIN_SDGPIO_17,
+	PC3X3_GPIO_PIN_SDGPIO_18,
+	PC3X3_GPIO_PIN_SDGPIO_19,
+	PC3X3_GPIO_PIN_SDGPIO_20,
+	PC3X3_GPIO_PIN_SDGPIO_21,
+	PC3X3_GPIO_PIN_SDGPIO_22,
+	PC3X3_GPIO_PIN_SDGPIO_23,
+};
+
+#ifdef __KERNEL__
+
+#include <asm-generic/gpio.h>
+#include <linux/irq.h>
+
+static inline int gpio_get_value(unsigned gpio)
+{
+	return __gpio_get_value(gpio);
+}
+
+static inline void gpio_set_value(unsigned gpio, int value)
+{
+	__gpio_set_value(gpio, value);
+}
+
+static inline int gpio_cansleep(unsigned gpio)
+{
+	return 0;
+}
+
+static inline int gpio_to_irq(unsigned gpio)
+{
+	return __gpio_to_irq(gpio);
+}
+
+static inline int irq_to_gpio(unsigned irq)
+{
+	if (irq > IRQ_GPIO7)
+		return -EINVAL;
+	return irq - IRQ_GPIO0;
+}
+
+#endif /* __KERNEL__ */
+
+#endif /* __MACH_GPIO_H__ */
