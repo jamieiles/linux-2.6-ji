@@ -618,6 +618,7 @@ config ARCH_PICOXCELL
 	select HAVE_SCHED_CLOCK
 	select CPU_V6K
 	select HAVE_TCM
+	select CLKDEV_LOOKUP
 	help
 	  This enables support for systems based on the Picochip picoXcell
 	  family of Femtocell devices.

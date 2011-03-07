@@ -14,6 +14,7 @@
 #include <asm/hardware/vic.h>
 #include <asm/mach-types.h>
 
+#include <mach/clkdev.h>
 #include <mach/hardware.h>
 
 #include "picoxcell_core.h"
