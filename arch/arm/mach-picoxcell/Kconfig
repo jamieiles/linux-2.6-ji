@@ -1,5 +1,7 @@
 if ARCH_PICOXCELL
 
+comment "Picochip SoC device support"
+
 comment "Picochip picoXcell board selection"
 
 config BOARD_PC7302

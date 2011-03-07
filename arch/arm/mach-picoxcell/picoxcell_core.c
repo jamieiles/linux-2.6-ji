@@ -20,35 +20,15 @@
 #include "picoxcell_core.h"
 #include "soc.h"
 
-static const struct picoxcell_timer picoxcell_timers[] = {
-	{
-		.name	= "timer0",
-		.type	= TIMER_TYPE_TIMER,
-		.base	= PICOXCELL_TIMER_BASE + 0 * TIMER_SPACING,
-		.irq	= IRQ_TIMER0,
-	},
-	{
-		.name	= "timer1",
-		.type	= TIMER_TYPE_TIMER,
-		.base	= PICOXCELL_TIMER_BASE + 1 * TIMER_SPACING,
-		.irq	= IRQ_TIMER1,
-	},
-	{
-		.name	= "rtc",
-		.type	= TIMER_TYPE_RTC,
-		.base	= PICOXCELL_RTCLK_BASE,
-		.irq	= IRQ_RTC,
-	},
-};
-
-static struct picoxcell_soc generic_soc = {
-	.timers		= picoxcell_timers,
-	.nr_timers	= ARRAY_SIZE(picoxcell_timers),
-};
-
 struct picoxcell_soc *picoxcell_get_soc(void)
 {
-	return &generic_soc;
+	unsigned long device_id =
+		__raw_readl(IO_ADDRESS(PICOXCELL_AXI2CFG_BASE +
+				       AXI2CFG_DEVICE_ID_REG_OFFSET));
+	switch (device_id) {
+	default:
+		panic("unsupported device type %lx", device_id);
+	}
 }
 
 void __init picoxcell_init_irq(void)
@@ -97,11 +77,17 @@ static void report_chipinfo(void)
 
 void __init picoxcell_init_early(void)
 {
+	struct picoxcell_soc *soc = picoxcell_get_soc();
+
 	axi2cfg_init();
 	picoxcell_sched_clock_init();
+	soc->init_clocks();
 }
 
 void __init picoxcell_core_init(void)
 {
+	struct picoxcell_soc *soc = picoxcell_get_soc();
+
 	report_chipinfo();
+	soc->init();
 }

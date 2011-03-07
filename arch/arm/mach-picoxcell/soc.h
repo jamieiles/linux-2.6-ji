@@ -22,11 +22,27 @@ struct picoxcell_timer {
 	int				irq;
 };
 
+enum picoxcell_features {
+	PICOXCELL_FEATURE_PM,
+	PICOXCELL_FEATURE_CPUFREQ,
+	NR_FEAT_BITS
+};
+
 struct picoxcell_soc {
+	void				(*init)(void);
+	void				(*init_clocks)(void);
 	const struct picoxcell_timer	*timers;
 	int				nr_timers;
+	unsigned long			features[BITS_TO_LONGS(NR_FEAT_BITS)];
 };
 
 extern struct picoxcell_soc *picoxcell_get_soc(void);
+
+static inline int picoxcell_has_feature(enum picoxcell_features feat)
+{
+	struct picoxcell_soc *soc = picoxcell_get_soc();
+
+	return test_bit(feat, soc->features);
+}
 
 #endif /* __PICOXCELL_SOC_H__ */
