@@ -83,7 +83,7 @@ static void __init cpuat91_init_irq(void)
 	at91rm9200_init_interrupts(NULL);
 }
 
-static struct at91_eth_data __initdata cpuat91_eth_data = {
+static struct macb_platform_data __initdata cpuat91_eth_data = {
 	.is_rmii	= 1,
 };
 

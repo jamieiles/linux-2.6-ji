@@ -84,7 +84,7 @@ static struct at91_udc_data __initdata ek_udc_data = {
 /*
  * MACB Ethernet device
  */
-static struct at91_eth_data __initdata ek_macb_data = {
+static struct macb_platform_data __initdata ek_macb_data = {
 	.phy_irq_pin	= AT91_PIN_PA31,
 	.is_rmii	= 1,
 };

@@ -71,7 +71,7 @@ static void __init kb9202_init_irq(void)
 	at91rm9200_init_interrupts(NULL);
 }
 
-static struct at91_eth_data __initdata kb9202_eth_data = {
+static struct macb_platform_data __initdata kb9202_eth_data = {
 	.phy_irq_pin	= AT91_PIN_PB29,
 	.is_rmii	= 0,
 };

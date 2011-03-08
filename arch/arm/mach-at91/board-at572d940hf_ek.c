@@ -104,7 +104,7 @@ static struct at91_mmc_data __initdata eb_mmc_data = {
 /*
  * MACB Ethernet device
  */
-static struct at91_eth_data __initdata eb_eth_data = {
+static struct macb_platform_data __initdata eb_eth_data = {
 	.phy_irq_pin	= AT91_PIN_PB25,
 	.is_rmii	= 1,
 };

@@ -18,11 +18,9 @@
 #include <linux/netdevice.h>
 #include <linux/etherdevice.h>
 #include <linux/dma-mapping.h>
+#include <linux/platform_data/macb.h>
 #include <linux/platform_device.h>
 #include <linux/phy.h>
-
-#include <mach/board.h>
-#include <mach/cpu.h>
 
 #include "macb.h"
 
@@ -190,7 +188,7 @@ static int macb_mii_probe(struct net_device *dev)
 {
 	struct macb *bp = netdev_priv(dev);
 	struct phy_device *phydev;
-	struct eth_platform_data *pdata;
+	struct macb_platform_data *pdata;
 	int ret;
 
 	phydev = phy_find_first(bp->mii_bus);
@@ -227,7 +225,7 @@ static int macb_mii_probe(struct net_device *dev)
 
 static int macb_mii_init(struct macb *bp)
 {
-	struct eth_platform_data *pdata;
+	struct macb_platform_data *pdata;
 	int err = -ENXIO, i;
 
 	/* Enable management port */
@@ -1107,7 +1105,7 @@ static const struct net_device_ops macb_netdev_ops = {
 
 static int __init macb_probe(struct platform_device *pdev)
 {
-	struct eth_platform_data *pdata;
+	struct macb_platform_data *pdata;
 	struct resource *regs;
 	struct net_device *dev;
 	struct macb *bp;

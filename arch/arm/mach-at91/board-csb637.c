@@ -57,7 +57,7 @@ static void __init csb637_init_irq(void)
 	at91rm9200_init_interrupts(NULL);
 }
 
-static struct at91_eth_data __initdata csb637_eth_data = {
+static struct macb_platform_data __initdata csb637_eth_data = {
 	.phy_irq_pin	= AT91_PIN_PC0,
 	.is_rmii	= 0,
 };
