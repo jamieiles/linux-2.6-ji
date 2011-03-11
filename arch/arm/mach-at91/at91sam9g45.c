@@ -157,8 +157,13 @@ static struct clk ac97_clk = {
 	.type		= CLK_TYPE_PERIPHERAL,
 };
 static struct clk macb_clk = {
-	.name		= "macb_clk",
+	.name		= "pclk",
 	.pmc_mask	= 1 << AT91SAM9G45_ID_EMAC,
+	.type		= CLK_TYPE_PERIPHERAL,
+};
+static struct clk macb_hclk = {
+	.name		= "hclk",
+	.pmc_mask	= 0,
 	.type		= CLK_TYPE_PERIPHERAL,
 };
 static struct clk isi_clk = {
@@ -224,6 +229,7 @@ static struct clk *periph_clocks[] __initdata = {
 	&lcdc_clk,
 	&ac97_clk,
 	&macb_clk,
+	&macb_hclk,
 	&isi_clk,
 	&udphs_clk,
 	&mmc1_clk,
