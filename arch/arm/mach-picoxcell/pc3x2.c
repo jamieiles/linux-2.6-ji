@@ -11,6 +11,7 @@
 #include <linux/io.h>
 #include <linux/irq.h>
 #include <linux/kernel.h>
+#include <linux/platform_device.h>
 #include <linux/timex.h>
 
 #include <mach/clkdev.h>
@@ -109,7 +110,14 @@ struct picoxcell_soc pc3x2_soc = {
 	.nr_timers	= ARRAY_SIZE(pc3x2_timers),
 };
 
+static void pc3x2_add_gpio(void)
+{
+	picoxcell_add_gpio_port(0, 8, PC3X2_GPIO_PIN_ARM_0);
+	picoxcell_add_gpio_port(1, 8, PC3X2_GPIO_PIN_ARM_8);
+}
+
 static void pc3x2_init(void)
 {
 	picoxcell_mux_register(pc3x2_mux, ARRAY_SIZE(pc3x2_mux));
+	pc3x2_add_gpio();
 }
