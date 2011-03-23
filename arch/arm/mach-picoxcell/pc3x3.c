@@ -478,9 +478,38 @@ static void pc3x3_init_cpufreq(void)
 		pr_err("failed to init cpufreq for pc3x3\n");
 }
 
+#ifdef CONFIG_PC3X3_STOP_WDT_IN_SUSPEND
+static inline void pc3x3_pm_stop_wdt(void)
+{
+	unsigned long syscfg = axi2cfg_readl(AXI2CFG_SYSCFG_REG_OFFSET);
+
+	syscfg |= (1 << AXI2CFG_SYSCFG_WDG_PAUSE_IDX);
+
+	axi2cfg_writel(syscfg, AXI2CFG_SYSCFG_REG_OFFSET);
+}
+
+static inline void pc3x3_pm_restore_wdt(void)
+{
+	unsigned long syscfg = axi2cfg_readl(AXI2CFG_SYSCFG_REG_OFFSET);
+
+	syscfg &= ~(1 << AXI2CFG_SYSCFG_WDG_PAUSE_IDX);
+
+	axi2cfg_writel(syscfg, AXI2CFG_SYSCFG_REG_OFFSET);
+}
+#else /* CONFIG_PC3X3_STOP_WDT_IN_SUSPEND */
+static inline void pc3x3_pm_stop_wdt(void) {}
+static inline void pc3x3_pm_restore_wdt(void) {}
+#endif /* CONFIG_PC3X3_STOP_WDT_IN_SUSPEND */
+
+static void pc3x3_init_pm(void)
+{
+	picoxcell_init_pm(pc3x3_pm_stop_wdt, pc3x3_pm_restore_wdt);
+}
+
 static void pc3x3_init(void)
 {
 	picoxcell_mux_register(pc3x3_mux, ARRAY_SIZE(pc3x3_mux));
 	pc3x3_add_gpio();
 	pc3x3_init_cpufreq();
+	pc3x3_init_pm();
 }

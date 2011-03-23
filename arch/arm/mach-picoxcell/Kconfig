@@ -16,6 +16,16 @@ config PICOXCELL_PC3X3
 	  Include support for picoChip PC3x3 family of devices. This includes
 	  PC313, PC323 and PC333.
 
+comment "Picochip picoXcell device configuration"
+
+config PC3X3_STOP_WDT_IN_SUSPEND
+	bool "Disable watchdog timer in suspend (PC3X3)"
+	depends on PICOXCELL_PC3X3
+	help
+	  Say yes to pause the watchdog timer when in suspend mode on PC3X3
+	  devices.  This will prevent the watchdog from rebooting the device
+	  when suspend is entered.
+
 comment "Picochip picoXcell board selection"
 
 config BOARD_PC7302
