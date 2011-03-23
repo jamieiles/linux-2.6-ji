@@ -387,11 +387,53 @@ struct picoxcell_soc pc3x3_soc = {
 	.nr_timers	= ARRAY_SIZE(pc3x3_timers),
 };
 
+static const char * const pc3x3_sdgpio_pins[] = {
+	"sdgpio0",
+	"sdgpio1",
+	"sdgpio2",
+	"sdgpio3",
+	"sdgpio4",
+	"sdgpio5",
+	"sdgpio6",
+	"sdgpio7",
+	"sdgpio8",
+	"sdgpio9",
+	"sdgpio10",
+	"sdgpio11",
+	"sdgpio12",
+	"sdgpio13",
+	"sdgpio14",
+	"sdgpio15",
+	"sdgpio16",
+	"sdgpio17",
+	"sdgpio18",
+	"sdgpio19",
+	"sdgpio20",
+	"sdgpio21",
+	"sdgpio22",
+	"sdgpio23",
+};
+
+static const struct sdgpio_platform_data pc3x3_sdgpio = {
+	.banks				= {
+		{
+			.names		= pc3x3_sdgpio_pins,
+			.block_base	= 0,
+			.gpio_start	= PC3X3_GPIO_PIN_SDGPIO_0,
+			.nr_pins	= ARRAY_SIZE(pc3x3_sdgpio_pins),
+			.label		= "sdgpio",
+		},
+	},
+	.nr_banks			= 1,
+};
+
 static void pc3x3_add_gpio(void)
 {
 	picoxcell_add_gpio_port(0, 8, PC3X3_GPIO_PIN_ARM_0);
 	picoxcell_add_gpio_port(1, 16, PC3X3_GPIO_PIN_ARM_8);
 	picoxcell_add_gpio_port(3, 30, PC3X3_GPIO_PIN_ARM_24);
+	platform_device_register_data(NULL, "sdgpio", -1, &pc3x3_sdgpio,
+		sizeof(pc3x3_sdgpio));
 }
 
 static void pc3x3_init(void)
