@@ -171,6 +171,24 @@ static inline int irq_to_gpio(unsigned irq)
 	return irq - IRQ_GPIO0;
 }
 
+struct picoxcell_gpio_bank {
+	int				block_base;
+	int				gpio_start;
+	size_t				nr_pins;
+	const char * const		*names;
+	const char			*label;
+};
+
+#define PICOXCELL_GPIO_MAX_BANKS	4
+
+struct sdgpio_platform_data {
+	size_t				nr_banks;
+	struct picoxcell_gpio_bank	banks[PICOXCELL_GPIO_MAX_BANKS];
+};
+
+int picoxcell_gpio_configure_dac(unsigned gpio, u8 converter_size,
+				 u16 analogue_rate);
+
 #endif /* __KERNEL__ */
 
 #endif /* __MACH_GPIO_H__ */
