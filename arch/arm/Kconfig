@@ -622,6 +622,7 @@ config ARCH_PICOXCELL
 	select ARCH_REQUIRE_GPIOLIB
 	select GENERIC_GPIO
 	select HAVE_NET_MACB
+	select ARCH_HAS_CPUFREQ
 	help
 	  This enables support for systems based on the Picochip picoXcell
 	  family of Femtocell devices.

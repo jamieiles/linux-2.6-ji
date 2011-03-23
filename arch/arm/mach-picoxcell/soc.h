@@ -47,4 +47,15 @@ static inline int picoxcell_has_feature(enum picoxcell_features feat)
 	return test_bit(feat, soc->features);
 }
 
+#ifdef CONFIG_CPU_FREQ
+extern int picoxcell_cpufreq_init(unsigned long min_freq_khz,
+				  unsigned long max_freq_khz);
+#else /* CONFIG_CPU_FREQ */
+static inline int picoxcell_cpufreq_init(unsigned long min_freq_khz,
+					 unsigned long max_freq_khz)
+{
+	return 0;
+}
+#endif /* CONFIG_CPU_FREQ */
+
 #endif /* __PICOXCELL_SOC_H__ */
