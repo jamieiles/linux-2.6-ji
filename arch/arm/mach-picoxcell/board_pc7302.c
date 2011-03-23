@@ -9,6 +9,8 @@
  *
  * All enquiries to support@picochip.com
  */
+#include <linux/clk.h>
+#include <linux/err.h>
 #include <linux/gpio.h>
 #include <linux/interrupt.h>
 #include <linux/io.h>
@@ -92,6 +94,19 @@ static struct platform_device pc7302_nor = {
 
 static void pc7302_init_nor(void)
 {
+	struct clk *ebi_clk = clk_get(NULL, "ebi");
+
+	if (IS_ERR(ebi_clk)) {
+		pr_err("failed to get EBI clk, unable to register NOR flash\n");
+		return;
+	}
+
+	if (clk_enable(ebi_clk)) {
+		pr_err("failed to enable EBI clk, unable to register NOR flash\n");
+		clk_put(ebi_clk);
+		return;
+	}
+
 	platform_device_register(&pc7302_nor);
 }
 
@@ -154,6 +169,19 @@ static struct platform_device pc7302_nand = {
 
 static void pc7302_init_nand(void)
 {
+	struct clk *ebi_clk = clk_get(NULL, "ebi");
+
+	if (IS_ERR(ebi_clk)) {
+		pr_err("failed to get EBI clk, unable to register NAND flash\n");
+		return;
+	}
+
+	if (clk_enable(ebi_clk)) {
+		pr_err("failed to enable EBI clk, unable to register NAND flash\n");
+		clk_put(ebi_clk);
+		return;
+	}
+
 	platform_device_register(&pc7302_nand);
 }
 
