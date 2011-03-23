@@ -7,7 +7,9 @@
  *
  * All enquiries to support@picochip.com
  */
+#include <linux/clk.h>
 #include <linux/delay.h>
+#include <linux/err.h>
 #include <linux/gpio.h>
 #include <linux/io.h>
 #include <linux/irq.h>
@@ -436,8 +438,49 @@ static void pc3x3_add_gpio(void)
 		sizeof(pc3x3_sdgpio));
 }
 
+/*
+ * The fuse block contains an 8 bit number which is the maximum clkf value
+ * that we can program. If this isn't programmed then allow 700Mhz operation.
+ * If not, limit the maximum speed to whatever this value corresponds to.
+ */
+static unsigned int picoxcell_cpufreq_max_speed(void)
+{
+#define MAX_CLKF_FUSE	904
+#define MAX_CLKF_REG	IO_ADDRESS(PICOXCELL_FUSE_BASE + 904 / 8)
+	u8 max_clkf;
+	struct clk *fuse;
+
+	fuse = clk_get_sys("picoxcell-fuse", NULL);
+	if (IS_ERR(fuse)) {
+		pr_warn("no fuse clk, unable to get max cpu freq\n");
+		max_clkf = 0;
+		goto out;
+	}
+
+	if (clk_enable(fuse)) {
+		pr_warn("unable to enable fuse clk, unable to get max cpu freq\n");
+		max_clkf = 0;
+		goto out_put;
+	}
+
+	max_clkf = readb(MAX_CLKF_REG);
+	clk_disable(fuse);
+
+out_put:
+	clk_put(fuse);
+out:
+	return max_clkf ? ((max_clkf + 1) * 5) * 1000 : 700000;
+}
+
+static void pc3x3_init_cpufreq(void)
+{
+	if (picoxcell_cpufreq_init(140000, picoxcell_cpufreq_max_speed()))
+		pr_err("failed to init cpufreq for pc3x3\n");
+}
+
 static void pc3x3_init(void)
 {
 	picoxcell_mux_register(pc3x3_mux, ARRAY_SIZE(pc3x3_mux));
 	pc3x3_add_gpio();
+	pc3x3_init_cpufreq();
 }
