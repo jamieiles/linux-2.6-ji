@@ -267,6 +267,7 @@ static void pc3x3_clk_init(void)
 	 * For PC3x3, disable the clocks that aren't required in the core
 	 * code. The drivers will enable the clocks when they get initialised.
 	 */
+	__clk_disable(&tzprot_clk);
 	__clk_disable(&spi_clk);
 	__clk_disable(&dmac0_clk);
 	__clk_disable(&dmac1_clk);
@@ -274,6 +275,9 @@ static void pc3x3_clk_init(void)
 	__clk_disable(&l2_engine_clk);
 	__clk_disable(&trng_clk);
 	__clk_disable(&otp_clk);
+	__clk_disable(&ebi_clk);
+	__clk_disable(&trng_clk);
+	__clk_disable(&fuse_clk);
 }
 
 static struct mux_def pc3x3_mux[] = {
