@@ -66,7 +66,7 @@ static struct clk_lookup pc3x3_clk_lookup[] = {
 	CLK_LOOKUP("picoxcell-l2",	NULL,		&l2_engine_clk),
 	CLK_LOOKUP("picoxcell-trng",	NULL,		&trng_clk),
 	CLK_LOOKUP("picoxcell-fuse",	NULL,		&fuse_clk),
-	CLK_LOOKUP("picoxcell-otp",	NULL,		&otp_clk),
+	CLK_LOOKUP("picoxcell-otp-pc3x3", NULL,		&otp_clk),
 	CLK_LOOKUP("dw_wdt",		NULL,		&wdt_clk),
 	CLK_LOOKUP(NULL,		"arm",		&arm_clk),
 	CLK_LOOKUP("macb",		"pclk",		&dummy_clk),
@@ -510,10 +510,22 @@ static void pc3x3_init_pm(void)
 	picoxcell_init_pm(pc3x3_pm_stop_wdt, pc3x3_pm_restore_wdt);
 }
 
+static void pc3x3_add_otp(void)
+{
+	struct resource otp_mem = {
+		.start		= PC3X3_OTP_BASE,
+		.end		= PC3X3_OTP_BASE + SZ_32K - 1,
+		.flags		= IORESOURCE_MEM,
+	};
+
+	platform_device_register_simple("picoxcell-otp-pc3x3", -1, &otp_mem, 1);
+}
+
 static void pc3x3_init(void)
 {
 	picoxcell_mux_register(pc3x3_mux, ARRAY_SIZE(pc3x3_mux));
 	pc3x3_add_gpio();
 	pc3x3_init_cpufreq();
 	pc3x3_init_pm();
+	pc3x3_add_otp();
 }
