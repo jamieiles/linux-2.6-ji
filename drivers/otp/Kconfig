@@ -32,4 +32,20 @@ config OTP_PC3X3
 	  Say Y or M here to allow support for the OTP found in PC3X3 devices.
 	  If you say M then the module will be called otp_pc3x3.
 
+config BFIN_OTP
+	tristate "Blackfin On-Chip OTP Memory Support"
+	depends on BLACKFIN && (BF51x || BF52x || BF54x)
+	default y
+	help
+	  If you say Y here, you will get support for a character device
+	  interface into the One Time Programmable memory pages that are
+	  stored on the Blackfin processor.  This will not get you access
+	  to the secure memory pages however.  You will need to write your
+	  own secure code and reader for that.
+
+	  To compile this driver as a module, choose M here: the module
+	  will be called bfin-otp.
+
+	  If unsure, it is safe to say Y.
+
 endif
