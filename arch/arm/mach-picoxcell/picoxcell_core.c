@@ -116,4 +116,5 @@ void __init picoxcell_core_init(void)
 	picoxcell_debugfs_init();
 
 	soc->init();
+	picoxcell_clk_debugfs_init();
 }

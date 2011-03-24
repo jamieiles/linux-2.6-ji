@@ -72,4 +72,6 @@ static inline int picoxcell_init_pm(void (*enter_lowpower)(void),
 struct dentry;
 extern struct dentry *picoxcell_debugfs;
 
+extern void picoxcell_clk_debugfs_init(void);
+
 #endif /* __PICOXCELL_SOC_H__ */

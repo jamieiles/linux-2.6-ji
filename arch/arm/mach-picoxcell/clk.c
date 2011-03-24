@@ -8,6 +8,7 @@
  * All enquiries to support@picochip.com
  */
 #include <linux/clk.h>
+#include <linux/debugfs.h>
 #include <linux/err.h>
 #include <linux/module.h>
 #include <linux/seq_file.h>
@@ -15,6 +16,9 @@
 
 #include <mach/clkdev.h>
 
+#include "soc.h"
+
+static struct dentry *clk_debugfs;
 static DEFINE_SPINLOCK(clk_lock);
 static LIST_HEAD(picoxcell_clks);
 
@@ -77,7 +81,61 @@ void clk_disable(struct clk *clk)
 }
 EXPORT_SYMBOL(clk_disable);
 
+static ssize_t clk_rate_read(struct file *filp, char __user *buf, size_t size,
+			     loff_t *off)
+{
+	struct clk *c = filp->f_dentry->d_inode->i_private;
+	char rate_buf[128];
+	size_t len;
+
+	len = snprintf(rate_buf, sizeof(rate_buf) - 1, "%lu\n",
+		       clk_get_rate(c));
+
+	return simple_read_from_buffer(buf, size, off, rate_buf, len);
+}
+
+static const struct file_operations clk_rate_fops = {
+	.read	= clk_rate_read,
+};
+
+static void picoxcell_clk_debugfs_add(struct clk *c)
+{
+	struct dentry *dentry;
+
+	if (!clk_debugfs)
+		return;
+
+	dentry = debugfs_create_dir(c->name, clk_debugfs);
+
+	if (!IS_ERR(dentry)) {
+		if (c->rate > 0)
+			debugfs_create_u32("rate", S_IRUGO, dentry,
+					   (u32 *)&c->rate);
+		else
+			debugfs_create_file("rate", S_IRUGO, dentry, c,
+					    &clk_rate_fops);
+		debugfs_create_u32("enable_count", S_IRUGO, dentry,
+				   (u32 *)&c->enable_count);
+	}
+}
+
 void picoxcell_clk_add(struct clk *clk)
 {
 	list_add_tail(&clk->head, &picoxcell_clks);
+	picoxcell_clk_debugfs_add(clk);
+}
+
+void __init picoxcell_clk_debugfs_init(void)
+{
+	struct clk *c;
+
+	if (!picoxcell_debugfs)
+		return;
+
+	clk_debugfs = debugfs_create_dir("clk", picoxcell_debugfs);
+	if (IS_ERR(clk_debugfs))
+		return;
+
+	list_for_each_entry(c, &picoxcell_clks, head)
+		picoxcell_clk_debugfs_add(c);
 }
