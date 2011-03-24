@@ -1,0 +1,93 @@
+What:           /sys/bus/otp/
+Date:           March 2011
+KernelVersion:  2.6.40+
+Contact:        Jamie Iles <jamie@jamieiles.com>
+Description:
+		The otp (One Time Programmable memory) bus presents a number
+		of devices where each device represents and OTP device in the
+		system.  An OTP device may have a number of regions (which can
+		be thought of as partitions) and the regions are child
+		devices.  Each region will create a device node which allows
+		the region to be written with read()/write() calls and the
+		device on the bus has attributes for controlling the
+		redundancy format and getting the region size.
+
+What:		/sys/bus/devices/otp#/
+Date:		March 2011
+KernelVersion:	2.6.40+
+Contact:	Jamie Iles <jamie@jamieiles.com>
+Description:
+		Each otp# directory represents an OTP device in the system.
+		The device has attributes that affect all of the regions in
+		the device such as write_enable and the number of regions.
+
+What:		/sys/bus/devices/otp#/otp#N
+Date:		March 2011
+KernelVersion:	2.6.40+
+Contact:	Jamie Iles <jamie@jamieiles.com>
+Description:
+		Each otp#N directory represents a region in the otp# device.
+		A region may be read from/written to through the character
+		device node named after the otp#N name.
+
+What:		/sys/bus/devices/otp#/write_enable
+Date:		March 2011
+KernelVersion:	2.6.40+
+Contact:	Jamie Iles <jamie@jamieiles.com>
+Description:
+		This file controls whether the OTP device can be written to.
+		If set to "enabled" then the regions may be written, the
+		number of regions may be changed and the format of any region
+		may be changed.
+
+What:		/sys/bus/devices/otp#/num_regions
+Date:		March 2011
+KernelVersion:	2.6.40+
+Contact:	Jamie Iles <jamie@jamieiles.com>
+Description:
+		This file controls the number of regions in the OTP device.
+		Valid values are 1, 2, 4 and 8. The number of regions may be
+		increased but never decreased. Increasing the number of
+		regions will create new devices on the otp bus.
+
+What:		/sys/bus/devices/otp#/strict_programming
+Date:		March 2011
+KernelVersion:	2.6.40+
+Contact:	Jamie Iles <jamie@jamieiles.com>
+Description:
+		This file indicates whether all words in a redundant format
+		must be programmed correctly to indicate success.  For
+		example, using the "redundant format", the same word is
+		written to two locations and wire-OR'd when reading back.
+		Disabling this will mean that programming will be considered a
+		success if the word can be read back correctly in its
+		redundant format even if there are bit errors when programming
+		the extra redundancy words.
+
+What:           /sys/bus/otp/devices/otp#/otp#N/format
+Date:           March 2011
+KernelVersion:  2.6.40+
+Contact:        Jamie Iles <jamie@jamieiles.com>
+Description:
+                The redundancy format of the region. Valid values are:
+			- single-ended (1 bit of storage per data bit).
+			- redundant (2 bits of storage, wire-OR'd per data
+			  bit).
+			- differential (2 bits of storage, differential
+			  voltage per data bit).
+			- differential-redundant (4 bits of storage, combining
+			  redundant and differential).
+			- ecc (transparent to the user)
+		Depending on the device type, it may be possible to increase
+		redundancy of a region but care will be needed if there is
+		data already in the region.
+
+What:           /sys/bus/otp/devices/otp#/otp#N/size
+Date:           March 2011
+KernelVersion:  2.6.40+
+Contact:        Jamie Iles <jamie@jamieiles.com>
+Description:
+                The effective storage size of the region. This is the amount
+		of data that a user can store in the region taking into
+		account the number of regions and the redundancy format of the
+		region itself.
