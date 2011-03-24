@@ -25,4 +25,11 @@ config OTP_WRITE_ENABLE
 
 	  If unsure, say N.
 
+config OTP_PC3X3
+	tristate "Enable support for Picochip PC3X3 OTP"
+	depends on ARCH_PICOXCELL
+	help
+	  Say Y or M here to allow support for the OTP found in PC3X3 devices.
+	  If you say M then the module will be called otp_pc3x3.
+
 endif
