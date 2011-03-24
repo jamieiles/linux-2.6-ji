@@ -7,6 +7,7 @@
  *
  * All enquiries to support@picochip.com
  */
+#include <linux/debugfs.h>
 #include <linux/interrupt.h>
 #include <linux/io.h>
 #include <linux/irq.h>
@@ -19,6 +20,8 @@
 
 #include "picoxcell_core.h"
 #include "soc.h"
+
+struct dentry *picoxcell_debugfs;
 
 struct picoxcell_soc *picoxcell_get_soc(void)
 {
@@ -84,6 +87,18 @@ static void report_chipinfo(void)
 	pr_info("Picochip picoXcell device: %s revision %lu\n", part, revision);
 }
 
+static void picoxcell_debugfs_init(void)
+{
+	picoxcell_debugfs = debugfs_create_dir("picoxcell", NULL);
+
+	if (IS_ERR(picoxcell_debugfs) &&
+	    -ENODEV != PTR_ERR(picoxcell_debugfs)) {
+		pr_err("failed to create picoxcell debugfs entry (%ld)\n",
+		       PTR_ERR(picoxcell_debugfs));
+		picoxcell_debugfs = NULL;
+	}
+}
+
 void __init picoxcell_init_early(void)
 {
 	struct picoxcell_soc *soc = picoxcell_get_soc();
@@ -98,5 +113,7 @@ void __init picoxcell_core_init(void)
 	struct picoxcell_soc *soc = picoxcell_get_soc();
 
 	report_chipinfo();
+	picoxcell_debugfs_init();
+
 	soc->init();
 }
