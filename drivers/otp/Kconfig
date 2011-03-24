@@ -1,0 +1,28 @@
+#
+# OTP memory configuration
+#
+
+menuconfig OTP
+	bool "OTP memory support"
+	help
+	  Say Y here to support OTP (One Time Programmable) memory.  This
+	  memory can commonly be used to store boot code, cryptographic keys
+	  and other persistent data.  This memory is typically a few KBytes in
+	  size and different devices may have different characteristics.  This
+	  provides a character device interface to these devices to allow the
+	  OTP to be programmed and read.
+
+if OTP
+
+config OTP_WRITE_ENABLE
+	bool "Enable writing support of OTP pages"
+	default n
+	help
+	  If you say Y here, you will enable support for writing of the
+	  OTP pages.  This is dangerous by nature as you can only program
+	  the pages once, so only enable this option when you actually
+	  need it so as to not inadvertently clobber data.
+
+	  If unsure, say N.
+
+endif
