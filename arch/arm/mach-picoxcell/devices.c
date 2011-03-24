@@ -8,6 +8,7 @@
  * All enquiries to support@picochip.com
  */
 #include <linux/dma-mapping.h>
+#include <linux/dw_dmac.h>
 #include <linux/serial_8250.h>
 #include <linux/serial_reg.h>
 #include <linux/platform_device.h>
@@ -137,11 +138,76 @@ static struct platform_device eth_device = {
 	.num_resources		= ARRAY_SIZE(eth_resources),
 };
 
+static struct resource dmac0_resources[] = {
+	{
+		.start		= PICOXCELL_DMAC1_BASE,
+		.end		= PICOXCELL_DMAC1_BASE + 0xFFFF,
+		.flags		= IORESOURCE_MEM,
+	},
+	{
+		.start		= IRQ_DMAC1,
+		.end		= IRQ_DMAC1,
+		.flags		= IORESOURCE_IRQ,
+	},
+};
+
+static struct dw_dma_platform_data dmac0_pdata = {
+	.nr_channels		= 8,
+};
+
+static u64 dmac0_dmamask = DMA_BIT_MASK(32);
+
+static struct platform_device dmac0_device = {
+	.name			= "dw_dmac",
+	.id			= 0,
+	.resource		= dmac0_resources,
+	.num_resources		= ARRAY_SIZE(dmac0_resources),
+	.dev			= {
+		.dma_mask		= &dmac0_dmamask,
+		.coherent_dma_mask	= DMA_BIT_MASK(32),
+		.platform_data		= &dmac0_pdata,
+	},
+};
+
+static struct resource dmac1_resources[] = {
+	{
+		.start		= PICOXCELL_DMAC2_BASE,
+		.end		= PICOXCELL_DMAC2_BASE + 0xFFFF,
+		.flags		= IORESOURCE_MEM,
+	},
+	{
+		.start		= IRQ_DMAC2,
+		.end		= IRQ_DMAC2,
+		.flags		= IORESOURCE_IRQ,
+	},
+};
+
+static struct dw_dma_platform_data dmac1_pdata = {
+	.nr_channels		= 8,
+	.is_private		= 1,
+};
+
+static u64 dmac1_dmamask = DMA_BIT_MASK(32);
+
+static struct platform_device dmac1_device = {
+	.name			= "dw_dmac",
+	.id			= 1,
+	.resource		= dmac1_resources,
+	.num_resources		= ARRAY_SIZE(dmac1_resources),
+	.dev			= {
+		.dma_mask		= &dmac1_dmamask,
+		.coherent_dma_mask	= DMA_BIT_MASK(32),
+		.platform_data		= &dmac1_pdata,
+	},
+};
+
 static struct platform_device *common_devices[] __initdata = {
 	&serial1_device,
 	&serial2_device,
 	&pmu_device,
 	&eth_device,
+	&dmac0_device,
+	&dmac1_device,
 };
 
 static int __init picoxcell_add_devices(void)
