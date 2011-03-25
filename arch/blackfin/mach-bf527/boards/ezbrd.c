@@ -806,6 +806,12 @@ static struct platform_device bfin_lq035q1_device = {
 };
 #endif
 
+#if defined(CONFIG_BFIN_OTP) || defined(CONFIG_BFIN_OTP_MODULE)
+static struct platform_device bfin_otp_device = {
+	.name = "bfin-otp",
+};
+#endif
+
 static struct platform_device *stamp_devices[] __initdata = {
 
 	&bfin_dpmc,
@@ -872,6 +878,10 @@ static struct platform_device *stamp_devices[] __initdata = {
 
 #if defined(CONFIG_MTD_PHYSMAP) || defined(CONFIG_MTD_PHYSMAP_MODULE)
 	&ezbrd_flash_device,
+#endif
+
+#if defined(CONFIG_BFIN_OTP) || defined(CONFIG_BFIN_OTP_MODULE)
+	&bfin_otp_device,
 #endif
 };
 

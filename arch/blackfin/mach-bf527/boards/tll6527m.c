@@ -873,6 +873,12 @@ static struct platform_device bfin_dpmc = {
 	},
 };
 
+#if defined(CONFIG_BFIN_OTP) || defined(CONFIG_BFIN_OTP_MODULE)
+static struct platform_device bfin_otp_device = {
+	.name = "bfin-otp",
+};
+#endif
+
 static struct platform_device *tll6527m_devices[] __initdata = {
 
 	&bfin_dpmc,
@@ -940,6 +946,10 @@ static struct platform_device *tll6527m_devices[] __initdata = {
 
 #if defined(CONFIG_GPIO_DECODER) || defined(CONFIG_GPIO_DECODER_MODULE)
 	&spi_decoded_gpio,
+#endif
+
+#if defined(CONFIG_BFIN_OTP) || defined(CONFIG_BFIN_OTP_MODULE)
+	&bfin_otp_device,
 #endif
 };
 

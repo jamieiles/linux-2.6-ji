@@ -1093,6 +1093,12 @@ static struct platform_device bfin_dpmc = {
 	},
 };
 
+#if defined(CONFIG_BFIN_OTP) || defined(CONFIG_BFIN_OTP_MODULE)
+static struct platform_device bfin_otp_device = {
+	.name = "bfin-otp",
+};
+#endif
+
 static struct platform_device *cm_bf548_devices[] __initdata = {
 
 	&bfin_dpmc,
@@ -1198,6 +1204,9 @@ static struct platform_device *cm_bf548_devices[] __initdata = {
 	&bfin_can_device,
 #endif
 
+#if defined(CONFIG_BFIN_OTP) || defined(CONFIG_BFIN_OTP_MODULE)
+	&bfin_otp_device,
+#endif
 };
 
 static int __init cm_bf548_init(void)
