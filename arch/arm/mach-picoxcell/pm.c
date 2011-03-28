@@ -37,7 +37,12 @@ static void wait_for_event(void)
 	pr_debug("entering sleep - wait for interrupt\n");
 	/* Drain the writebuffer and wait for an interrupt. */
 	dsb();
-	wfi();
+	/*
+	 * wfi instruction is only available on SMP v6K so use the cp15
+	 * version.
+	 */
+	asm volatile("mcr   p15, 0, %0, c7, c0, 4\n" : : "r"(0));
+
 }
 
 static int picoxcell_pm_enter(suspend_state_t state)
