@@ -149,6 +149,8 @@
 #define GEM_CLK_SIZE				3
 #define GEM_DBW_OFFSET				21
 #define GEM_DBW_SIZE				2
+#define GEM_CSUMEN_OFFSET			24
+#define GEM_CSUMEN_SIZE				1
 
 /* Constants for data bus width. */
 #define GEM_DBW32				0
@@ -158,6 +160,8 @@
 /* Bitfields in DMACFG. */
 #define GEM_RXBS_OFFSET				16
 #define GEM_RXBS_SIZE				8
+#define GEM_TXCSUM_OFFSET			11
+#define GEM_TXCSUM_SIZE				1
 
 /* Bitfields in NSR */
 #define MACB_NSR_LINK_OFFSET			0
@@ -364,6 +368,9 @@ struct dma_desc {
 #define MACB_RX_WRAP_SIZE			1
 #define MACB_RX_WADDR_OFFSET			2
 #define MACB_RX_WADDR_SIZE			30
+
+#define GEM_CSUM_OFFSET				22
+#define GEM_CSUM_SIZE				2
 
 #define MACB_RX_FRMLEN_OFFSET			0
 #define MACB_RX_FRMLEN_SIZE			12

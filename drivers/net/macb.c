@@ -404,7 +404,11 @@ static int macb_rx_frame(struct macb *bp, unsigned int first_frag,
 	}
 
 	skb_reserve(skb, RX_OFFSET);
-	skb_checksum_none_assert(skb);
+	if (bp->is_gem && (bp->rx_ring[last_frag].ctrl & GEM_BF(CSUM, 0x3)))
+		skb->ip_summed = CHECKSUM_UNNECESSARY;
+	else
+		skb_checksum_none_assert(skb);
+
 	skb_put(skb, len);
 
 	for (frag = first_frag; ; frag = NEXT_RX(frag)) {
@@ -846,6 +850,9 @@ static u32 macb_dbw(struct macb *bp)
 /*
  * Configure the receive DMA engine to use the correct receive buffer size.
  * This is a configurable parameter for GEM.
+ *
+ * GEM also supports TX checksum offloading in the DMA engine so enable that
+ * here.
  */
 static void macb_configure_dma(struct macb *bp)
 {
@@ -854,6 +861,7 @@ static void macb_configure_dma(struct macb *bp)
 	if (bp->is_gem) {
 		dmacfg = gem_readl(bp, DMACFG) & ~GEM_BF(RXBS, -1L);
 		dmacfg |= GEM_BF(RXBS, RX_BUFFER_SIZE / 64);
+		dmacfg |= GEM_BF(TXCSUM, 1);
 		gem_writel(bp, DMACFG, dmacfg);
 	}
 }
@@ -874,6 +882,8 @@ static void macb_init_hw(struct macb *bp)
 	if (!(bp->dev->flags & IFF_BROADCAST))
 		config |= MACB_BIT(NBC);	/* No BroadCast */
 	config |= macb_dbw(bp);
+	if (bp->is_gem)
+		config |= GEM_BIT(CSUMEN);
 	macb_writel(bp, NCFGR, config);
 
 	macb_configure_dma(bp);
@@ -1307,6 +1317,10 @@ static int __init macb_probe(struct platform_device *pdev)
 	/* Set MII management clock divider */
 	config = macb_mdc_clk_div(bp);
 	config |= macb_dbw(bp);
+	if (bp->is_gem) {
+		config |= GEM_BIT(CSUMEN);
+		dev->features |= NETIF_F_IP_CSUM;
+	}
 	macb_writel(bp, NCFGR, config);
 
 	macb_get_hwaddr(bp);
