@@ -69,6 +69,7 @@
 #define GEM_HRT					0x0084
 #define GEM_SA1B				0x0088
 #define GEM_SA1T				0x008C
+#define GEM_WOL					0x00b8
 #define GEM_OTX					0x0100
 #define GEM_DCFG1				0x0280
 #define GEM_DCFG2				0x0284
@@ -222,6 +223,10 @@
 #define MACB_PFR_SIZE				1
 #define MACB_PTZ_OFFSET				13
 #define MACB_PTZ_SIZE				1
+
+/* GEM bitfields in ISR/IER/IDR/IMR */
+#define GEM_EXTIRQ_OFFSET			15
+#define GEM_EXTIRQ_SIZE				1
 
 /* Bitfields in MAN */
 #define MACB_DATA_OFFSET			0
@@ -540,6 +545,10 @@ struct macb {
 	unsigned int 		link;
 	unsigned int 		speed;
 	unsigned int 		duplex;
+
+#ifdef CONFIG_PM
+	u32			save_irq_en;
+#endif
 };
 
 #endif /* _MACB_H */

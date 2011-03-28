@@ -585,6 +585,9 @@ static irqreturn_t macb_interrupt(int irq, void *dev_id)
 			netdev_err(dev, "DMA bus error: HRESP not OK\n");
 		}
 
+		if (bp->is_gem && (status & GEM_BIT(EXTIRQ)))
+			netdev_info(dev, "woken by magic packet\n");
+
 		status = macb_readl(bp, ISR);
 	}
 
@@ -868,7 +871,7 @@ static void macb_configure_dma(struct macb *bp)
 
 static void macb_init_hw(struct macb *bp)
 {
-	u32 config;
+	u32 config, irq_en;
 
 	macb_reset_hw(bp);
 	__macb_set_hwaddr(bp);
@@ -896,15 +899,22 @@ static void macb_init_hw(struct macb *bp)
 	macb_writel(bp, NCR, MACB_BIT(RE) | MACB_BIT(TE) | MACB_BIT(MPE));
 
 	/* Enable interrupts */
-	macb_writel(bp, IER, (MACB_BIT(RCOMP)
-			      | MACB_BIT(RXUBR)
-			      | MACB_BIT(ISR_TUND)
-			      | MACB_BIT(ISR_RLE)
-			      | MACB_BIT(TXERR)
-			      | MACB_BIT(TCOMP)
-			      | MACB_BIT(ISR_ROVR)
-			      | MACB_BIT(HRESP)));
+	irq_en = MACB_BIT(RCOMP)
+	       | MACB_BIT(RXUBR)
+	       | MACB_BIT(ISR_TUND)
+	       | MACB_BIT(ISR_RLE)
+	       | MACB_BIT(TXERR)
+	       | MACB_BIT(TCOMP)
+	       | MACB_BIT(ISR_ROVR)
+	       | MACB_BIT(HRESP);
 
+	/*
+	 * We use the wol output connected to the external IRQ pin to wake the
+	 * GEM device back up.
+	 */
+	if (bp->is_gem)
+		irq_en |= GEM_BIT(EXTIRQ);
+	macb_writel(bp, IER, irq_en);
 }
 
 /*
@@ -1204,11 +1214,45 @@ static void macb_get_drvinfo(struct net_device *dev,
 	strcpy(info->bus_info, dev_name(&bp->pdev->dev));
 }
 
+static void macb_get_wol(struct net_device *dev,
+			 struct ethtool_wolinfo *wol)
+{
+	struct macb *bp = netdev_priv(dev);
+
+	wol->supported = WAKE_MAGIC;
+	wol->wolopts = MACB_BFEXT(MAG, macb_or_gem_readl(bp, WOL)) ?
+		WAKE_MAGIC : 0;
+	memset(&wol->sopass, 0, sizeof(wol->sopass));
+}
+
+static int macb_set_wol(struct net_device *dev, struct ethtool_wolinfo *wol)
+{
+	struct macb *bp = netdev_priv(dev);
+
+	/* We only support magic packet wake. */
+	if (wol->wolopts & ~WAKE_MAGIC)
+		return -EINVAL;
+
+	if (wol->wolopts & WAKE_MAGIC) {
+		device_set_wakeup_enable(&bp->pdev->dev, true);
+		macb_or_gem_writel(bp, WOL, MACB_BIT(MAG));
+		irq_set_irq_wake(dev->irq, 1);
+	} else {
+		macb_or_gem_writel(bp, WOL, 0);
+		device_set_wakeup_enable(&bp->pdev->dev, false);
+		irq_set_irq_wake(dev->irq, 0);
+	}
+
+	return 0;
+}
+
 static const struct ethtool_ops macb_ethtool_ops = {
 	.get_settings		= macb_get_settings,
 	.set_settings		= macb_set_settings,
 	.get_drvinfo		= macb_get_drvinfo,
 	.get_link		= ethtool_op_get_link,
+	.get_wol		= macb_get_wol,
+	.set_wol		= macb_set_wol,
 };
 
 static int macb_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
@@ -1303,6 +1347,7 @@ static int __init macb_probe(struct platform_device *pdev)
 			dev->irq, err);
 		goto err_out_iounmap;
 	}
+	device_init_wakeup(&pdev->dev, 1);
 
 	/* Cadence GEM has a module ID of 2. */
 	if (MACB_BFEXT(IDNUM, macb_readl(bp, MID)) == 0x2)
@@ -1420,8 +1465,24 @@ static int macb_suspend(struct platform_device *pdev, pm_message_t state)
 
 	netif_device_detach(netdev);
 
-	clk_disable(bp->hclk);
-	clk_disable(bp->pclk);
+	if (!netif_running(netdev))
+		return 0;
+
+	napi_disable(&bp->napi);
+
+	if (device_may_wakeup(&pdev->dev)) {
+		bp->save_irq_en = macb_readl(bp, IMR);
+		macb_writel(bp, IDR, ~0);
+		/*
+		 * For GEM we use the external interrupt to wake us up.  This
+		 * is the only interrupt we want to leave enabled.
+		 */
+		if (bp->is_gem)
+			macb_writel(bp, IER, GEM_BIT(EXTIRQ));
+	} else {
+		clk_disable(bp->hclk);
+		clk_disable(bp->pclk);
+	}
 
 	return 0;
 }
@@ -1431,10 +1492,20 @@ static int macb_resume(struct platform_device *pdev)
 	struct net_device *netdev = platform_get_drvdata(pdev);
 	struct macb *bp = netdev_priv(netdev);
 
-	clk_enable(bp->pclk);
-	clk_enable(bp->hclk);
+	if (!netif_running(netdev)) {
+		netif_device_attach(netdev);
+		return 0;
+	}
+
+	if (!device_may_wakeup(&pdev->dev)) {
+		clk_enable(bp->pclk);
+		clk_enable(bp->hclk);
+	} else {
+		macb_writel(bp, IER, ~bp->save_irq_en);
+	}
 
 	netif_device_attach(netdev);
+	napi_enable(&bp->napi);
 
 	return 0;
 }
