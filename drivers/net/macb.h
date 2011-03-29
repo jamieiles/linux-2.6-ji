@@ -79,6 +79,19 @@
 #define GEM_DCFG6				0x0294
 #define GEM_DCFG7				0x0298
 
+#define GEM_TMRSEC				0x01d0
+#define GEM_TMRNSEC				0x01d4
+#define GEM_TMRADJ				0x01d8
+#define GEM_TMRINC				0x01dc
+
+/* Bitfields in TMRINC. */
+#define GEM_NSINC_OFFSET			0
+#define GEM_NSINC_SIZE				8
+#define GEM_NSALT_OFFSET			8
+#define GEM_NSALT_SIZE				8
+#define GEM_INCCNT_OFFSET			16
+#define GEM_INCCNT_SIZE				8
+
 /* Bitfields in NCR */
 #define MACB_LB_OFFSET				0
 #define MACB_LB_SIZE				1
@@ -106,6 +119,8 @@
 #define MACB_NCR_TPF_SIZE			1
 #define MACB_TZQ_OFFSET				12
 #define MACB_TZQ_SIZE				1
+#define GEM_TSTAMP_OFFSET			15
+#define GEM_TSTAMP_SIZE				1
 
 /* Bitfields in NCFGR */
 #define MACB_SPD_OFFSET				0
@@ -279,6 +294,12 @@
 /* Bitfields in DCFG1. */
 #define GEM_DBWDEF_OFFSET			25
 #define GEM_DBWDEF_SIZE				3
+
+/* Bitfields in DCFG5. */
+#define GEM_TSUCLK_OFFSET			28
+#define GEM_TSUCLK_SIZE				28
+#define GEM_TSU_OFFSET				8
+#define GEM_TSU_SIZE				1
 
 /* Constants for CLK */
 #define MACB_CLK_DIV8				0
@@ -513,6 +534,8 @@ struct gem_stats {
 struct macb {
 	void __iomem		*regs;
 	int			is_gem;
+	int			have_tsu;
+	int			hwts_rx_en;
 
 	unsigned int		rx_tail;
 	struct dma_desc		*rx_ring;
@@ -526,6 +549,7 @@ struct macb {
 	struct platform_device	*pdev;
 	struct clk		*pclk;
 	struct clk		*hclk;
+	struct clk		*tsu;
 	struct net_device	*dev;
 	struct napi_struct	napi;
 	struct net_device_stats	stats;

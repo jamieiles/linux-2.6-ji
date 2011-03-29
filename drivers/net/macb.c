@@ -12,6 +12,7 @@
 #include <linux/module.h>
 #include <linux/moduleparam.h>
 #include <linux/kernel.h>
+#include <linux/net_tstamp.h>
 #include <linux/types.h>
 #include <linux/slab.h>
 #include <linux/init.h>
@@ -378,6 +379,39 @@ static void macb_tx(struct macb *bp)
 		netif_wake_queue(bp->dev);
 }
 
+/*
+ * Extract the timestamp for the packet.  GEM stores the nanoseconds portion
+ * of the timestamp in the FCS field of the frame but we have to get the
+ * seconds portion from the registers.  To work around a possible rollover of
+ * seconds from the period the packet is stamped to when we process it, we
+ * read the seconds count from hardware twice around reading the nanoseconds
+ * from hardware.  If the seconds are different then we know that we've
+ * rolled over and can use the first value we've read along with the
+ * nanoseconds value.  If we haven't rolled over but the nanoseconds from
+ * software is less than the packet then we may have also rolled over and need
+ * to remove a second.  This all relies on processing the packet within one
+ * second of reception but that's the best we can do.
+ */
+static u64 macb_ts_from_skb(struct macb *bp, struct sk_buff *skb)
+{
+	u32 sec, nsec_skb, nsec_hw, sec_hw;
+
+	sec_hw = gem_readl(bp, TMRSEC);
+	nsec_hw = gem_readl(bp, TMRNSEC);
+	sec = gem_readl(bp, TMRSEC);
+
+	/* Extract the nanoseconds for the packet from the FCS. */
+	memcpy(&nsec_skb, skb->data + RX_OFFSET + skb->len - 4,
+	       sizeof(nsec_skb));
+
+	if (sec != sec_hw)
+		sec = sec_hw;
+	else if (nsec_hw < nsec_skb)
+		sec--;
+
+	return (u64)sec * NSEC_PER_SEC + nsec_skb;
+}
+
 static int macb_rx_frame(struct macb *bp, unsigned int first_frag,
 			 unsigned int last_frag)
 {
@@ -428,6 +462,12 @@ static int macb_rx_frame(struct macb *bp, unsigned int first_frag,
 
 		if (frag == last_frag)
 			break;
+	}
+
+	if (bp->have_tsu && bp->hwts_rx_en) {
+		struct skb_shared_hwtstamps *shhwtstamps = skb_hwtstamps(skb);
+		memset(shhwtstamps, 0, sizeof(*shhwtstamps));
+		shhwtstamps->hwtstamp = ns_to_ktime(macb_ts_from_skb(bp, skb));
 	}
 
 	skb->protocol = eth_type_trans(skb, bp->dev);
@@ -869,6 +909,75 @@ static void macb_configure_dma(struct macb *bp)
 	}
 }
 
+static void macb_program_timer_incr(struct macb *bp, unsigned long tsu_rate)
+{
+	unsigned long cycles_per_nsec = NSEC_PER_SEC / tsu_rate;
+	unsigned long incr = 0, nr_cycles = 0, period = 0, loops = 0, fixup = 0;
+
+	if (tsu_rate * cycles_per_nsec == NSEC_PER_SEC)
+		incr = cycles_per_nsec;
+	else {
+		/*
+		 * We can't do a fixed number of nanoseconds per cycles but if
+		 * we aim for an input resolution of 200KHz then we should be
+		 * able to do it with a number of increments plus a final
+		 * fixup.
+		 */
+		nr_cycles = tsu_rate / 200000;
+		period = 5000 / nr_cycles;
+		loops = nr_cycles - 1;
+		fixup = 5000 - loops * period;
+
+		incr = GEM_BF(NSINC, period) |
+		       GEM_BF(NSALT, fixup) |
+		       GEM_BF(INCCNT, loops);
+	}
+	gem_writel(bp, TMRINC, incr);
+}
+
+static int macb_configure_tsu(struct macb *bp)
+{
+	unsigned long tsu_rate;
+	int err;
+
+	/* MACB doesn't have a TSU, but GEM does. */
+	if (!bp->is_gem || !(gem_readl(bp, DCFG5) & GEM_BIT(TSU)))
+		return 0;
+
+	if (gem_readl(bp, DCFG5) & GEM_BIT(TSUCLK))
+		bp->tsu = clk_get(&bp->pdev->dev, "tsu");
+	else
+		bp->tsu = bp->pclk;
+
+	if (IS_ERR(bp->tsu)) {
+		netdev_info(bp->dev, "no tsu clk present, timestamping not activated\n");
+		err = PTR_ERR(bp->tsu);
+		goto out;
+	}
+
+	err = clk_enable(bp->tsu);
+	if (err) {
+		netdev_err(bp->dev, "unable to enable tsu clk\n");
+		goto out_put_clk;
+	}
+
+	tsu_rate = clk_get_rate(bp->tsu);
+
+	/* Program the TSU to increment at the correct rate. */
+	macb_program_timer_incr(bp, tsu_rate);
+
+	bp->have_tsu = 1;
+	macb_writel(bp, NCR, macb_readl(bp, NCR) | GEM_BIT(TSTAMP));
+	macb_writel(bp, NCFGR, macb_readl(bp, NCFGR) & ~MACB_BIT(DRFCS));
+
+	return 0;
+
+out_put_clk:
+	clk_put(bp->tsu);
+out:
+	return err;
+}
+
 static void macb_init_hw(struct macb *bp)
 {
 	u32 config, irq_en;
@@ -1255,6 +1364,46 @@ static const struct ethtool_ops macb_ethtool_ops = {
 	.set_wol		= macb_set_wol,
 };
 
+static int macb_hwstamp_ioctl(struct net_device *dev, struct ifreq *ifr,
+			      int cmd)
+{
+	struct hwtstamp_config config;
+	struct macb *bp = netdev_priv(dev);
+
+	if (copy_from_user(&config, ifr->ifr_data, sizeof(config)))
+		return -EFAULT;
+
+	/* Reserved for future extensions. */
+	if (config.flags)
+		return -EINVAL;
+
+	/* We only support timestamping of RX packets. */
+	switch (config.tx_type) {
+	case HWTSTAMP_TX_OFF:
+		break;
+	case HWTSTAMP_TX_ON:
+	default:
+		return -ERANGE;
+	}
+
+	switch (config.rx_filter) {
+	case HWTSTAMP_FILTER_NONE:
+		if (bp->hwts_rx_en)
+			bp->hwts_rx_en = 0;
+		break;
+	default:
+		if (!bp->have_tsu)
+			return -ERANGE;
+		if (!bp->hwts_rx_en)
+			bp->hwts_rx_en = 1;
+		config.rx_filter = HWTSTAMP_FILTER_ALL;
+		break;
+	}
+
+	return copy_to_user(ifr->ifr_data, &config, sizeof(config)) ?
+		-EFAULT : 0;
+}
+
 static int macb_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
 {
 	struct macb *bp = netdev_priv(dev);
@@ -1265,6 +1414,9 @@ static int macb_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
 
 	if (!phydev)
 		return -ENODEV;
+
+	if (cmd == SIOCSHWTSTAMP)
+		return macb_hwstamp_ioctl(dev, rq, cmd);
 
 	return phy_mii_ioctl(phydev, rq, cmd);
 }
@@ -1352,6 +1504,8 @@ static int __init macb_probe(struct platform_device *pdev)
 	/* Cadence GEM has a module ID of 2. */
 	if (MACB_BFEXT(IDNUM, macb_readl(bp, MID)) == 0x2)
 		bp->is_gem = 1;
+	if (macb_configure_tsu(bp))
+		goto err_out_free_irq;
 
 	dev->netdev_ops = &macb_netdev_ops;
 	netif_napi_add(dev, &bp->napi, macb_poll, 64);
@@ -1390,7 +1544,7 @@ static int __init macb_probe(struct platform_device *pdev)
 	err = register_netdev(dev);
 	if (err) {
 		dev_err(&pdev->dev, "Cannot register net device, aborting.\n");
-		goto err_out_free_irq;
+		goto err_out_put_tsu;
 	}
 
 	if (macb_mii_init(bp) != 0) {
@@ -1414,6 +1568,11 @@ err_out_unregister_netdev:
 	unregister_netdev(dev);
 err_out_free_irq:
 	free_irq(dev->irq, dev);
+err_out_put_tsu:
+	if (bp->have_tsu) {
+		clk_disable(bp->tsu);
+		clk_put(bp->tsu);
+	}
 err_out_iounmap:
 	iounmap(bp->regs);
 err_out_disable_clocks:
@@ -1450,6 +1609,10 @@ static int __exit macb_remove(struct platform_device *pdev)
 		clk_put(bp->hclk);
 		clk_disable(bp->pclk);
 		clk_put(bp->pclk);
+		if (bp->have_tsu) {
+			clk_disable(bp->tsu);
+			clk_put(bp->tsu);
+		}
 		free_netdev(dev);
 		platform_set_drvdata(pdev, NULL);
 	}
