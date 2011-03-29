@@ -187,6 +187,7 @@ static void pc7302_init_nand(void)
 
 static void __init pc7302_init(void)
 {
+	picoxcell_tsu_init(20000000);
 	picoxcell_core_init();
 
 	if ((axi2cfg_readl(AXI2CFG_SYSCFG_REG_OFFSET) & 0x3) == 0)
