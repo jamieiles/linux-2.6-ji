@@ -24,4 +24,10 @@ extern void picoxcell_sched_clock_init(void);
 
 extern int picoxcell_add_gpio_port(int port, int ngpio, int base);
 
+#ifdef CONFIG_PICOXCELL_HAVE_TSU
+void picoxcell_tsu_init(unsigned long rate);
+#else /* CONFIG_PICOXCELL_HAVE_TSU */
+static inline void picoxcell_tsu_init(unsigned long rate) {}
+#endif /* CONFIG_PICOXCELL_HAVE_TSU */
+
 #endif /* __ASM_ARCH_PICOXCELL_CORE_H__ */

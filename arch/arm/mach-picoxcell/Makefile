@@ -10,3 +10,4 @@ obj-$(CONFIG_PICOXCELL_PC3X2)	+= pc3x2.o
 obj-$(CONFIG_PICOXCELL_PC3X3)	+= pc3x3.o
 obj-$(CONFIG_CPU_FREQ)		+= cpufreq.o
 obj-$(CONFIG_PM)		+= pm.o
+obj-$(CONFIG_PICOXCELL_HAVE_TSU)+= tsu.o
