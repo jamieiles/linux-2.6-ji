@@ -116,8 +116,57 @@ static void pc3x2_add_gpio(void)
 	picoxcell_add_gpio_port(1, 8, PC3X2_GPIO_PIN_ARM_8);
 }
 
+static void pc3x2_init_bus_snoopers(void)
+{
+	static const char *pc3x2_snoop_err_names[32] = {
+		[0]	= "dmac1_channel0 (read)",
+		[1]	= "dmac1_channel1 (read)",
+		[2]	= "dmac1_channel2 (read)",
+		[3]	= "dmac1_channel3 (read)",
+		[4]	= "dmac2_channel0 (read)",
+		[5]	= "dmac2_channel1 (read)",
+		[6]	= "dmac2_channel2 (read)",
+		[7]	= "dmac2_channel3 (read)",
+		[8]	= "emac (read)",
+		[9]	= "cipher (read)",
+		[10]	= "srtp (read)",
+		[11]	= "ipsec (read)",
+		[12]	= "dmac1_channel0 (write)",
+		[13]	= "dmac1_channel1 (write)",
+		[14]	= "dmac1_channel2 (write)",
+		[15]	= "dmac1_channel3 (write)",
+		[16]	= "dmac2_channel0 (write)",
+		[17]	= "dmac2_channel1 (write)",
+		[18]	= "dmac2_channel2 (write)",
+		[19]	= "dmac2_channel3 (write)",
+		[20]	= "emac (write)",
+		[21]	= "cipher (write)",
+		[22]	= "srtp (write)",
+		[23]	= "ipsec (write)",
+	};
+
+	static struct resource irqs[] = {
+		{
+			.start	= IRQ_AXI_RD_ERR,
+			.end	= IRQ_AXI_RD_ERR,
+			.flags	= IORESOURCE_IRQ,
+		},
+		{
+			.start	= IRQ_AXI_WR_ERR,
+			.end	= IRQ_AXI_WR_ERR,
+			.flags	= IORESOURCE_IRQ,
+		},
+	};
+
+	platform_device_register_resndata(NULL, "picoxcell-bus-error", -1,
+					  irqs, ARRAY_SIZE(irqs),
+					  pc3x2_snoop_err_names,
+					  sizeof(pc3x2_snoop_err_names));
+}
+
 static void pc3x2_init(void)
 {
 	picoxcell_mux_register(pc3x2_mux, ARRAY_SIZE(pc3x2_mux));
 	pc3x2_add_gpio();
+	pc3x2_init_bus_snoopers();
 }
