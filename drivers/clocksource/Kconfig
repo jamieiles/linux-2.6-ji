@@ -4,3 +4,8 @@
 
 config DW_APB_TIMER
 	bool
+
+config DW_APB_TIMER_PLATFORM
+	depends on HAVE_CLK
+	select DW_APB_TIMER
+	bool
