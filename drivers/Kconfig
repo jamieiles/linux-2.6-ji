@@ -121,4 +121,6 @@ source "drivers/clk/Kconfig"
 source "drivers/hwspinlock/Kconfig"
 
 source "drivers/otp/Kconfig"
+
+source "drivers/clocksource/Kconfig"
 endmenu

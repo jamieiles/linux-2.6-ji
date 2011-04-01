@@ -1,0 +1,6 @@
+#
+# Clocksource configuration
+#
+
+config DW_APB_TIMER
+	bool
