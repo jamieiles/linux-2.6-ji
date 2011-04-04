@@ -12,6 +12,17 @@
 
 #include <linux/clkdev.h>
 
+struct clk;
+
+struct clk_ops {
+	void		    (*enable)(struct clk *clk);
+	void		    (*disable)(struct clk *clk);
+	int		    (*is_enabled)(struct clk *clk);
+	long		    (*round_rate)(struct clk *clk, unsigned long rate);
+	int		    (*set_rate)(struct clk *clk, unsigned long rate);
+	int		    (*get_rate)(struct clk *clk);
+};
+
 struct clk {
 	const char	    *name;
 	struct list_head    head;
@@ -20,12 +31,7 @@ struct clk {
 					       variable rate clocks in KHz. */
 	int		    enable_count;
 	int		    clk_num;
-	void		    (*enable)(struct clk *clk);
-	void		    (*disable)(struct clk *clk);
-	int		    (*is_enabled)(struct clk *clk);
-	long		    (*round_rate)(struct clk *clk, unsigned long rate);
-	int		    (*set_rate)(struct clk *clk, unsigned long rate);
-	int		    (*get_rate)(struct clk *clk);
+	struct clk_ops	    *ops;
 };
 
 static inline int __clk_get(struct clk *clk)
@@ -45,15 +51,16 @@ extern void __clk_disable(struct clk *clk);
  * Declare a new clock with a given rate and ID. All clocks are enabled by
  * default.
  */
-#define FIXED_CLK(__name, __rate, __id)					\
+#define FIXED_CLK(__name, __rate, __id, __ops)				\
 	static struct clk __name ## _clk = {				\
 		.name		= #__name,				\
 		.rate		= __rate,				\
 		.clk_num	= __id,					\
 		.enable_count	= 1,					\
+		.ops		= (__ops),				\
 	}
 
-#define VARIABLE_CLK(__name, __id, __min, __max, __step)		\
+#define VARIABLE_CLK(__name, __id, __min, __max, __step, __ops)		\
 	static struct clk __name ## _clk = {				\
 		.name		= #__name,				\
 		.clk_num	= __id,					\
@@ -62,6 +69,7 @@ extern void __clk_disable(struct clk *clk);
 		.min		= __min,				\
 		.max		= __max,				\
 		.step		= __step,				\
+		.ops		= (__ops),				\
 	}
 
 #define CLK_LOOKUP(__dev_id, __con_id, __clk) \

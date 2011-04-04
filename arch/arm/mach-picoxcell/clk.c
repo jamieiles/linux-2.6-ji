@@ -24,27 +24,30 @@ static LIST_HEAD(picoxcell_clks);
 
 unsigned long clk_get_rate(struct clk *clk)
 {
-	return clk->get_rate ? clk->get_rate(clk) : clk->rate;
+	return clk->ops && clk->ops->get_rate ? clk->ops->get_rate(clk) :
+		clk->rate;
 }
 EXPORT_SYMBOL(clk_get_rate);
 
 long clk_round_rate(struct clk *clk, unsigned long rate)
 {
-	return clk->round_rate ? clk->round_rate(clk, rate) : -EOPNOTSUPP;
+	return clk->ops && clk->ops->round_rate ?
+		clk->ops->round_rate(clk, rate) : -EOPNOTSUPP;
 }
 EXPORT_SYMBOL(clk_round_rate);
 
 int clk_set_rate(struct clk *clk, unsigned long rate)
 {
-	return clk->set_rate ? clk->set_rate(clk, rate) : 0;
+	return clk->ops && clk->ops->set_rate ?
+		clk->ops->set_rate(clk, rate) : -EOPNOTSUPP;
 }
 EXPORT_SYMBOL(clk_set_rate);
 
 int __clk_enable(struct clk *clk)
 {
 	if (++clk->enable_count > 0) {
-		if (clk->enable)
-			clk->enable(clk);
+		if (clk->ops && clk->ops->enable)
+			clk->ops->enable(clk);
 	}
 
 	return 0;
@@ -66,8 +69,8 @@ EXPORT_SYMBOL(clk_enable);
 void __clk_disable(struct clk *clk)
 {
 	if (--clk->enable_count <= 0) {
-		if (clk->disable)
-			clk->disable(clk);
+		if (clk->ops && clk->ops->disable)
+			clk->ops->disable(clk);
 	}
 }
 
