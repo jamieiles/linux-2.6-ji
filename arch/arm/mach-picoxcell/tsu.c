@@ -14,7 +14,7 @@
 
 #include "picoxcell_core.h"
 
-FIXED_CLK(tsu, 0, -1);
+FIXED_CLK(tsu, 0, -1, NULL);
 static struct clk_lookup tsu_clk_lookup = CLK_LOOKUP("macb", "tsu", &tsu_clk);
 module_param_named(rate, tsu_clk.rate, int, 0);
 
