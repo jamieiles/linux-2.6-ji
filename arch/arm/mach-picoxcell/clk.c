@@ -22,6 +22,8 @@ static struct dentry *clk_debugfs;
 static DEFINE_SPINLOCK(clk_lock);
 static LIST_HEAD(picoxcell_clks);
 
+static void picoxcell_clk_debugfs_add(struct clk *c);
+
 unsigned long clk_get_rate(struct clk *clk)
 {
 	return clk->ops && clk->ops->get_rate ? clk->ops->get_rate(clk) :
@@ -46,6 +48,8 @@ EXPORT_SYMBOL(clk_set_rate);
 int __clk_enable(struct clk *clk)
 {
 	if (++clk->enable_count > 0) {
+		if (clk->parent)
+			__clk_enable(clk->parent);
 		if (clk->ops && clk->ops->enable)
 			clk->ops->enable(clk);
 	}
@@ -69,6 +73,8 @@ EXPORT_SYMBOL(clk_enable);
 void __clk_disable(struct clk *clk)
 {
 	if (--clk->enable_count <= 0) {
+		if (clk->parent)
+			__clk_disable(clk->parent);
 		if (clk->ops && clk->ops->disable)
 			clk->ops->disable(clk);
 	}
@@ -83,6 +89,28 @@ void clk_disable(struct clk *clk)
 	spin_unlock_irqrestore(&clk_lock, flags);
 }
 EXPORT_SYMBOL(clk_disable);
+
+int clk_set_parent(struct clk *clk, struct clk *parent)
+{
+	unsigned long flags;
+	int err = -EINVAL;
+
+	spin_lock_irqsave(&clk_lock, flags);
+	if (!clk->parent) {
+		clk->parent = parent;
+		if (clk->debug) {
+			debugfs_remove(clk->debug);
+			clk->debug = NULL;
+			picoxcell_clk_debugfs_add(clk);
+		}
+		clk->parent->enable_count += clk->enable_count;
+		err = 0;
+	}
+	spin_unlock_irqrestore(&clk_lock, flags);
+
+	return err;
+}
+EXPORT_SYMBOL(clk_set_parent);
 
 static ssize_t clk_rate_read(struct file *filp, char __user *buf, size_t size,
 			     loff_t *off)
@@ -103,22 +131,29 @@ static const struct file_operations clk_rate_fops = {
 
 static void picoxcell_clk_debugfs_add(struct clk *c)
 {
-	struct dentry *dentry;
+	struct dentry *parent_dentry;
 
-	if (!clk_debugfs)
+	if (!clk_debugfs || c->debug)
 		return;
 
-	dentry = debugfs_create_dir(c->name, clk_debugfs);
+	if (c->parent) {
+		picoxcell_clk_debugfs_add(c->parent);
+		parent_dentry = c->parent->debug;
+	} else
+		parent_dentry = clk_debugfs;
 
-	if (!IS_ERR(dentry)) {
+	c->debug = debugfs_create_dir(c->name, parent_dentry);
+	if (!IS_ERR(c->debug)) {
 		if (c->rate > 0)
-			debugfs_create_u32("rate", S_IRUGO, dentry,
+			debugfs_create_u32("rate", S_IRUGO, c->debug,
 					   (u32 *)&c->rate);
 		else
-			debugfs_create_file("rate", S_IRUGO, dentry, c,
+			debugfs_create_file("rate", S_IRUGO, c->debug, c,
 					    &clk_rate_fops);
-		debugfs_create_u32("enable_count", S_IRUGO, dentry,
+		debugfs_create_u32("enable_count", S_IRUGO, c->debug,
 				   (u32 *)&c->enable_count);
+	} else {
+		c->debug = NULL;
 	}
 }
 

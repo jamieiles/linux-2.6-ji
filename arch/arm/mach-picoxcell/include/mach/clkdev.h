@@ -11,6 +11,7 @@
 #define __PICOXCELL_CLKDEV_H__
 
 #include <linux/clkdev.h>
+#include <linux/fs.h>
 
 struct clk;
 
@@ -25,6 +26,7 @@ struct clk_ops {
 
 struct clk {
 	const char	    *name;
+	struct clk	    *parent;
 	struct list_head    head;
 	int		    rate;
 	unsigned	    min, max, step; /* min, max and frequency steps for
@@ -32,6 +34,10 @@ struct clk {
 	int		    enable_count;
 	int		    clk_num;
 	struct clk_ops	    *ops;
+
+#ifdef CONFIG_DEBUG_FS
+	struct dentry	    *debug;
+#endif /* CONFIG_DEBUG_FS */
 };
 
 static inline int __clk_get(struct clk *clk)
