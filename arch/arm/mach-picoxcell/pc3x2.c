@@ -21,7 +21,7 @@
 #include "picoxcell_core.h"
 #include "soc.h"
 
-FIXED_CLK(dummy,	CLOCK_TICK_RATE, -1);
+FIXED_CLK(dummy,	CLOCK_TICK_RATE, -1, NULL);
 
 static struct clk_lookup pc3x2_clk_lookup[] = {
 	CLK_LOOKUP("dw_spi_mmio.0",	NULL,		&dummy_clk),
