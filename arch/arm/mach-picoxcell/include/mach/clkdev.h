@@ -53,21 +53,24 @@ extern void picoxcell_clk_add(struct clk *clk);
 extern int __clk_enable(struct clk *clk);
 extern void __clk_disable(struct clk *clk);
 
-/*
- * Declare a new clock with a given rate and ID. All clocks are enabled by
- * default.
- */
-#define FIXED_CLK(__name, __rate, __id, __ops)				\
-	static struct clk __name ## _clk = {				\
+#define FIXED_CLK_INIT(__name, __rate, __id, __ops) \
+	{								\
 		.name		= #__name,				\
 		.rate		= __rate,				\
 		.clk_num	= __id,					\
 		.enable_count	= 1,					\
 		.ops		= (__ops),				\
 	}
+/*
+ * Declare a new clock with a given rate and ID. All clocks are enabled by
+ * default.
+ */
+#define FIXED_CLK(__name, __rate, __id, __ops) \
+	static struct clk __name ## _clk = \
+		FIXED_CLK_INIT(__name, __rate, __id, __ops)
 
-#define VARIABLE_CLK(__name, __id, __min, __max, __step, __ops)		\
-	static struct clk __name ## _clk = {				\
+#define VARIABLE_CLK_INIT(__name, __id, __min, __max, __step, __ops)	\
+	{								\
 		.name		= #__name,				\
 		.clk_num	= __id,					\
 		.enable_count	= 1,					\
@@ -77,6 +80,10 @@ extern void __clk_disable(struct clk *clk);
 		.step		= __step,				\
 		.ops		= (__ops),				\
 	}
+
+#define VARIABLE_CLK(__name, __id, __min, __max, __step, __ops)		\
+	static struct clk __name ## _clk =				\
+		VARIABLE_CLK_INIT(__name, __id, __min, __max, __step, __ops)
 
 #define CLK_LOOKUP(__dev_id, __con_id, __clk) \
 	{ .dev_id = __dev_id, .con_id = __con_id, .clk = __clk }
