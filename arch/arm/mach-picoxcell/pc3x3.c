@@ -61,7 +61,7 @@ FIXED_CLK(fuse,		CLOCK_TICK_RATE, 8, &pc3x3_fixed_clk_ops);
 FIXED_CLK(otp,		CLOCK_TICK_RATE, 9, &pc3x3_fixed_clk_ops);
 FIXED_CLK(wdt,		CLOCK_TICK_RATE, -1, &pc3x3_fixed_clk_ops);
 FIXED_CLK(dummy,	CLOCK_TICK_RATE, -1, &pc3x3_fixed_clk_ops);
-VARIABLE_CLK(arm,			 -1, 140000, 700000, 5000, &pc3x3_variable_clk_ops);
+VARIABLE_CLK(arm,			 -1, 140000000, 700000000, 5000000, &pc3x3_variable_clk_ops);
 
 static int pc3x3_clk_is_enabled(struct clk *clk)
 {
@@ -181,7 +181,8 @@ static void
 pc3x3_cpu_pll_set(unsigned int freq)
 {
 	/* Set the new frequency. */
-	axi2cfg_writel(((freq / 1000) / 5) - 1, AXI2CFG_ARM_PLL_CLKF_REG_OFFS);
+	axi2cfg_writel(((freq / 1000000) / 5) - 1,
+		       AXI2CFG_ARM_PLL_CLKF_REG_OFFS);
 	udelay(2);
 }
 
@@ -211,14 +212,14 @@ static int pc3x3_clk_set_rate(struct clk *clk, unsigned long target)
 			next_step = current_khz - ((4 * current_khz) / 5);
 			next_target = current_khz -
 				min(current_khz - target, next_step);
-			next_target = roundup(next_target, clk->step);
+			next_target = roundup(next_target * 1000, clk->step);
 		} else {
 			next_step = ((6 * current_khz) / 5) - current_khz;
 			next_target =
 				min(target - current_khz, next_step) +
 				current_khz;
-			next_target =
-				(next_target / clk->step) * clk->step;
+			next_target = ((next_target * 1000) / clk->step) *
+				clk->step;
 		}
 
 		pc3x3_cpu_pll_set(next_target);
