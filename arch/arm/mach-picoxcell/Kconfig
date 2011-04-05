@@ -16,6 +16,12 @@ config PICOXCELL_PC3X3
 	  Include support for picoChip PC3x3 family of devices. This includes
 	  PC313, PC323 and PC333.
 
+config PICOXCELL_PC30XX
+	bool "Support PC30xx devices"
+	default y
+	help
+	  Include support for picoChip PC30xx family of devices.
+
 comment "Picochip picoXcell device configuration"
 
 config PC3X3_STOP_WDT_IN_SUSPEND

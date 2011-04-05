@@ -39,6 +39,7 @@ struct picoxcell_soc {
 extern struct picoxcell_soc *picoxcell_get_soc(void);
 extern struct picoxcell_soc pc3x2_soc;
 extern struct picoxcell_soc pc3x3_soc;
+extern struct picoxcell_soc pc30xx_soc;
 
 static inline int picoxcell_has_feature(enum picoxcell_features feat)
 {
