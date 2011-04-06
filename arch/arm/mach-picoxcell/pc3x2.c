@@ -7,6 +7,7 @@
  *
  * All enquiries to support@picochip.com
  */
+#include <linux/clk.h>
 #include <linux/gpio.h>
 #include <linux/io.h>
 #include <linux/irq.h>
@@ -22,6 +23,7 @@
 #include "soc.h"
 
 FIXED_CLK(dummy,	CLOCK_TICK_RATE, -1, NULL);
+FIXED_CLK(ref,		20000000, -1, NULL);
 
 static struct clk_lookup pc3x2_clk_lookup[] = {
 	CLK_LOOKUP("dw_spi_mmio.0",	NULL,		&dummy_clk),
@@ -35,11 +37,14 @@ static struct clk_lookup pc3x2_clk_lookup[] = {
 	CLK_LOOKUP("dw_wdt",		NULL,		&dummy_clk),
 	CLK_LOOKUP("macb",		"pclk",		&dummy_clk),
 	CLK_LOOKUP("macb",		"hclk",		&dummy_clk),
+	CLK_LOOKUP(NULL,		"ref",		&ref_clk),
 };
 
 static void pc3x2_clk_init(void)
 {
 	picoxcell_clk_add(&dummy_clk);
+	picoxcell_clk_add(&ref_clk);
+	clk_set_parent(&dummy_clk, &ref_clk);
 	clkdev_add_table(pc3x2_clk_lookup, ARRAY_SIZE(pc3x2_clk_lookup));
 }
 
