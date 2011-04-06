@@ -31,5 +31,6 @@ static inline void picoxcell_tsu_init(unsigned long rate) {}
 #endif /* CONFIG_PICOXCELL_HAVE_TSU */
 
 extern void __init armgpio_irq_init(void);
+extern int picoxcell_add_uart(unsigned long addr, int irq, int id);
 
 #endif /* __ASM_ARCH_PICOXCELL_CORE_H__ */
