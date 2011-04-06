@@ -291,7 +291,6 @@ static void pc3x3_clk_init(void)
 	__clk_disable(&trng_clk);
 	__clk_disable(&otp_clk);
 	__clk_disable(&ebi_clk);
-	__clk_disable(&trng_clk);
 	__clk_disable(&fuse_clk);
 }
 
