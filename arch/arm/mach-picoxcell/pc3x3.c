@@ -61,6 +61,7 @@ FIXED_CLK(fuse,		CLOCK_TICK_RATE, 8, &pc3x3_fixed_clk_ops);
 FIXED_CLK(otp,		CLOCK_TICK_RATE, 9, &pc3x3_fixed_clk_ops);
 FIXED_CLK(wdt,		CLOCK_TICK_RATE, -1, &pc3x3_fixed_clk_ops);
 FIXED_CLK(dummy,	CLOCK_TICK_RATE, -1, &pc3x3_fixed_clk_ops);
+FIXED_CLK(ref,		20000000, -1, NULL);
 VARIABLE_CLK(arm,			 -1, 140000000, 700000000, 5000000, &pc3x3_variable_clk_ops);
 
 static int pc3x3_clk_is_enabled(struct clk *clk)
@@ -262,6 +263,7 @@ static struct clk_lookup pc3x3_clk_lookup[] = {
 	CLK_LOOKUP(NULL,		"arm",		&arm_clk),
 	CLK_LOOKUP("macb",		"pclk",		&dummy_clk),
 	CLK_LOOKUP("macb",		"hclk",		&dummy_clk),
+	CLK_LOOKUP(NULL,		"ref",		&ref_clk),
 };
 
 static void pc3x3_clk_init(void)
@@ -270,8 +272,11 @@ static void pc3x3_clk_init(void)
 
 	clkdev_add_table(pc3x3_clk_lookup, ARRAY_SIZE(pc3x3_clk_lookup));
 
-	for (i = 0; i < ARRAY_SIZE(pc3x3_clks); ++i)
+	picoxcell_clk_add(&ref_clk);
+	for (i = 0; i < ARRAY_SIZE(pc3x3_clks); ++i) {
 		picoxcell_clk_add(pc3x3_clks[i]);
+		clk_set_parent(pc3x3_clks[i], &ref_clk);
+	}
 
 	/*
 	 * For PC3x3, disable the clocks that aren't required in the core
