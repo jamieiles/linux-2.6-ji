@@ -10,6 +10,7 @@
  * All enquiries to support@picochip.com
  */
 #include <linux/clk.h>
+#include <linux/clkdev.h>
 #include <linux/err.h>
 #include <linux/gpio.h>
 #include <linux/interrupt.h>
@@ -185,10 +186,24 @@ static void pc7302_init_nand(void)
 	platform_device_register(&pc7302_nand);
 }
 
+FIXED_CLK(pc7302_uart,	3686400, -1, NULL);
+static struct clk_lookup pc7302_uart_lookup = CLK_LOOKUP(NULL, "uart",
+							 &pc7302_uart_clk);
+
+static void pc7302_register_uarts(void)
+{
+	picoxcell_clk_add(&pc7302_uart_clk);
+	clkdev_add(&pc7302_uart_lookup);
+	picoxcell_add_uart(PICOXCELL_UART1_BASE, IRQ_UART1, 0);
+	picoxcell_add_uart(PICOXCELL_UART2_BASE, IRQ_UART2, 1);
+}
+
 static void __init pc7302_init(void)
 {
 	picoxcell_tsu_init(20000000);
 	picoxcell_core_init();
+
+	pc7302_register_uarts();
 
 	if ((axi2cfg_readl(AXI2CFG_SYSCFG_REG_OFFSET) & 0x3) == 0)
 		pc7302_init_nor();
