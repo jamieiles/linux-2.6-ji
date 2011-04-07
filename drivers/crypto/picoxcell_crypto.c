@@ -105,7 +105,20 @@ struct spacc_req {
 };
 
 struct spacc_engine {
+	int				version;
 	void __iomem			*regs;
+
+	/*
+	 * These location of these registers depends on the SPAcc version so
+	 * rather than runtime evaluation we cache the addresses here and use
+	 * the pointers.
+	 */
+	void __iomem			*proc_len;
+	void __iomem			*icv_len;
+	void __iomem			*icv_offs;
+	void __iomem			*ctrl;
+	void __iomem			*aux_info;
+
 	struct list_head		pending;
 	int				next_ctx;
 	spinlock_t			hw_lock;
@@ -646,11 +659,11 @@ static int spacc_aead_submit(struct spacc_req *req)
 	if (!req->is_encrypt)
 		proc_len -= ctx->auth_size;
 
-	writel(proc_len, engine->regs + SPA_PROC_LEN_REG_OFFSET);
+	writel(proc_len, engine->proc_len);
 	writel(assoc_len, engine->regs + SPA_AAD_LEN_REG_OFFSET);
-	writel(ctx->auth_size, engine->regs + SPA_ICV_LEN_REG_OFFSET);
-	writel(0, engine->regs + SPA_ICV_OFFSET_REG_OFFSET);
-	writel(0, engine->regs + SPA_AUX_INFO_REG_OFFSET);
+	writel(ctx->auth_size, engine->icv_len);
+	writel(0, engine->icv_offs);
+	writel(0, engine->aux_info);
 
 	ctrl = spacc_alg->ctrl_default | (req->ctx_id << SPA_CTRL_CTX_IDX) |
 		(1 << SPA_CTRL_ICV_APPEND);
@@ -661,7 +674,7 @@ static int spacc_aead_submit(struct spacc_req *req)
 
 	mod_timer(&engine->packet_timeout, jiffies + PACKET_TIMEOUT);
 
-	writel(ctrl, engine->regs + SPA_CTRL_REG_OFFSET);
+	writel(ctrl, engine->ctrl);
 
 	return -EINPROGRESS;
 }
@@ -952,9 +965,9 @@ static int spacc_ablk_submit(struct spacc_req *req)
 	writel(req->dst_addr, engine->regs + SPA_DST_PTR_REG_OFFSET);
 	writel(0, engine->regs + SPA_OFFSET_REG_OFFSET);
 
-	writel(ablk_req->nbytes, engine->regs + SPA_PROC_LEN_REG_OFFSET);
-	writel(0, engine->regs + SPA_ICV_OFFSET_REG_OFFSET);
-	writel(0, engine->regs + SPA_AUX_INFO_REG_OFFSET);
+	writel(ablk_req->nbytes, engine->proc_len);
+	writel(0, engine->icv_offs);
+	writel(0, engine->aux_info);
 	writel(0, engine->regs + SPA_AAD_LEN_REG_OFFSET);
 
 	ctrl = spacc_alg->ctrl_default | (req->ctx_id << SPA_CTRL_CTX_IDX) |
@@ -963,7 +976,7 @@ static int spacc_ablk_submit(struct spacc_req *req)
 
 	mod_timer(&engine->packet_timeout, jiffies + PACKET_TIMEOUT);
 
-	writel(ctrl, engine->regs + SPA_CTRL_REG_OFFSET);
+	writel(ctrl, engine->ctrl);
 
 	return -EINPROGRESS;
 }
@@ -1661,14 +1674,16 @@ static int __devinit spacc_probe(struct platform_device *pdev)
 	if (!engine)
 		return -ENOMEM;
 
-	if (!strcmp(platid->name, "picoxcell-ipsec")) {
+	if (!strcmp(platid->name, "picoxcell-ipsec") ||
+	    !strcmp(platid->name, "picoxcell-ipsec-v2")) {
 		engine->max_ctxs	= SPACC_CRYPTO_IPSEC_MAX_CTXS;
 		engine->cipher_pg_sz	= SPACC_CRYPTO_IPSEC_CIPHER_PG_SZ;
 		engine->hash_pg_sz	= SPACC_CRYPTO_IPSEC_HASH_PG_SZ;
 		engine->fifo_sz		= SPACC_CRYPTO_IPSEC_FIFO_SZ;
 		engine->algs		= ipsec_engine_algs;
 		engine->num_algs	= ARRAY_SIZE(ipsec_engine_algs);
-	} else if (!strcmp(platid->name, "picoxcell-l2")) {
+	} else if (!strcmp(platid->name, "picoxcell-l2") ||
+		   !strcmp(platid->name, "picoxcell-l2-v2")) {
 		engine->max_ctxs	= SPACC_CRYPTO_L2_MAX_CTXS;
 		engine->cipher_pg_sz	= SPACC_CRYPTO_L2_CIPHER_PG_SZ;
 		engine->hash_pg_sz	= SPACC_CRYPTO_L2_HASH_PG_SZ;
@@ -1679,6 +1694,7 @@ static int __devinit spacc_probe(struct platform_device *pdev)
 		return -EINVAL;
 	}
 
+	engine->version		= strstr(platid->name, "v2") ? 2 : 1;
 	engine->name		= dev_name(&pdev->dev);
 
 	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
@@ -1697,6 +1713,17 @@ static int __devinit spacc_probe(struct platform_device *pdev)
 		dev_err(&pdev->dev, "memory map failed\n");
 		return -ENOMEM;
 	}
+
+	engine->proc_len	= engine->regs +
+				  SPA_PROC_LEN_REG_OFFSET(engine->version);
+	engine->icv_len		= engine->regs +
+				  SPA_ICV_LEN_REG_OFFSET(engine->version);
+	engine->icv_offs	= engine->regs +
+				  SPA_ICV_OFFSET_REG_OFFSET(engine->version);
+	engine->ctrl		= engine->regs +
+				  SPA_CTRL_REG_OFFSET(engine->version);
+	engine->aux_info	= engine->regs +
+				  SPA_AUX_INFO_REG_OFFSET(engine->version);
 
 	if (devm_request_irq(&pdev->dev, irq->start, spacc_spacc_irq, 0,
 			     engine->name, engine)) {
@@ -1806,7 +1833,9 @@ static int __devexit spacc_remove(struct platform_device *pdev)
 
 static const struct platform_device_id spacc_id_table[] = {
 	{ "picoxcell-ipsec", },
+	{ "picoxcell-ipsec-v2", },
 	{ "picoxcell-l2", },
+	{ "picoxcell-l2-v2", },
 	{},
 };
 
