@@ -64,6 +64,7 @@
 #define SPACC_CRYPTO_ALG_PRIORITY	10000
 
 #define SPACC_CRYPTO_KASUMI_F8_KEY_LEN	16
+#define SPACC_CRYPTO_SNOW3G_KEY_LEN	16
 #define SPACC_CRYPTO_IPSEC_CIPHER_PG_SZ 64
 #define SPACC_CRYPTO_IPSEC_HASH_PG_SZ	64
 #define SPACC_CRYPTO_IPSEC_MAX_CTXS	32
@@ -895,8 +896,8 @@ sw_setkey_failed:
 	return err;
 }
 
-static int spacc_kasumi_f8_setkey(struct crypto_ablkcipher *cipher,
-				  const u8 *key, unsigned int len)
+static int spacc_l2_setkey(struct crypto_ablkcipher *cipher, const u8 *key,
+			   unsigned int len)
 {
 	struct crypto_tfm *tfm = crypto_ablkcipher_tfm(cipher);
 	struct spacc_ablk_ctx *ctx = crypto_tfm_ctx(tfm);
@@ -1651,12 +1652,66 @@ static struct spacc_alg l2_engine_algs[] = {
 			.cra_type = &crypto_ablkcipher_type,
 			.cra_module = THIS_MODULE,
 			.cra_ablkcipher = {
-				.setkey = spacc_kasumi_f8_setkey,
+				.setkey = spacc_l2_setkey,
 				.encrypt = spacc_ablk_encrypt,
 				.decrypt = spacc_ablk_decrypt,
 				.min_keysize = 16,
 				.max_keysize = 16,
 				.ivsize = 8,
+			},
+			.cra_init = spacc_ablk_cra_init,
+			.cra_exit = spacc_ablk_cra_exit,
+		},
+	},
+};
+
+static struct spacc_alg l2_engine_algs_v2[] = {
+	{
+		.key_offs = 0,
+		.iv_offs = SPACC_CRYPTO_KASUMI_F8_KEY_LEN,
+		.ctrl_default = SPA_CTRL_CIPH_ALG_KASUMI |
+				SPA_CTRL_CIPH_MODE_F8,
+		.alg = {
+			.cra_name = "f8(kasumi)",
+			.cra_driver_name = "f8-kasumi-picoxcell",
+			.cra_priority = SPACC_CRYPTO_ALG_PRIORITY,
+			.cra_flags = CRYPTO_ALG_TYPE_GIVCIPHER | CRYPTO_ALG_ASYNC,
+			.cra_blocksize = 8,
+			.cra_ctxsize = sizeof(struct spacc_ablk_ctx),
+			.cra_type = &crypto_ablkcipher_type,
+			.cra_module = THIS_MODULE,
+			.cra_ablkcipher = {
+				.setkey = spacc_l2_setkey,
+				.encrypt = spacc_ablk_encrypt,
+				.decrypt = spacc_ablk_decrypt,
+				.min_keysize = 16,
+				.max_keysize = 16,
+				.ivsize = 8,
+			},
+			.cra_init = spacc_ablk_cra_init,
+			.cra_exit = spacc_ablk_cra_exit,
+		},
+	},
+	{
+		.key_offs = 0,
+		.iv_offs = SPACC_CRYPTO_SNOW3G_KEY_LEN,
+		.ctrl_default = SPA_CTRL_CIPH_ALG_SNOW3G,
+		.alg = {
+			.cra_name = "snow3g",
+			.cra_driver_name = "snow3g-picoxcell",
+			.cra_priority = SPACC_CRYPTO_ALG_PRIORITY,
+			.cra_flags = CRYPTO_ALG_TYPE_GIVCIPHER | CRYPTO_ALG_ASYNC,
+			.cra_blocksize = 8,
+			.cra_ctxsize = sizeof(struct spacc_ablk_ctx),
+			.cra_type = &crypto_ablkcipher_type,
+			.cra_module = THIS_MODULE,
+			.cra_ablkcipher = {
+				.setkey = spacc_l2_setkey,
+				.encrypt = spacc_ablk_encrypt,
+				.decrypt = spacc_ablk_decrypt,
+				.min_keysize = 16,
+				.max_keysize = 16,
+				.ivsize = 16,
 			},
 			.cra_init = spacc_ablk_cra_init,
 			.cra_exit = spacc_ablk_cra_exit,
@@ -1682,14 +1737,20 @@ static int __devinit spacc_probe(struct platform_device *pdev)
 		engine->fifo_sz		= SPACC_CRYPTO_IPSEC_FIFO_SZ;
 		engine->algs		= ipsec_engine_algs;
 		engine->num_algs	= ARRAY_SIZE(ipsec_engine_algs);
-	} else if (!strcmp(platid->name, "picoxcell-l2") ||
-		   !strcmp(platid->name, "picoxcell-l2-v2")) {
+	} else if (!strcmp(platid->name, "picoxcell-l2")) {
 		engine->max_ctxs	= SPACC_CRYPTO_L2_MAX_CTXS;
 		engine->cipher_pg_sz	= SPACC_CRYPTO_L2_CIPHER_PG_SZ;
 		engine->hash_pg_sz	= SPACC_CRYPTO_L2_HASH_PG_SZ;
 		engine->fifo_sz		= SPACC_CRYPTO_L2_FIFO_SZ;
 		engine->algs		= l2_engine_algs;
 		engine->num_algs	= ARRAY_SIZE(l2_engine_algs);
+	} else if (!strcmp(platid->name, "picoxcell-l2-v2")) {
+		engine->max_ctxs	= SPACC_CRYPTO_L2_MAX_CTXS;
+		engine->cipher_pg_sz	= SPACC_CRYPTO_L2_CIPHER_PG_SZ;
+		engine->hash_pg_sz	= SPACC_CRYPTO_L2_HASH_PG_SZ;
+		engine->fifo_sz		= SPACC_CRYPTO_L2_FIFO_SZ;
+		engine->algs		= l2_engine_algs_v2;
+		engine->num_algs	= ARRAY_SIZE(l2_engine_algs_v2);
 	} else {
 		return -EINVAL;
 	}
