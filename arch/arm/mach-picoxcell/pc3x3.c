@@ -581,6 +581,14 @@ static void pc3x3_init_bus_snoopers(void)
 					  sizeof(pc3x3_snoop_err_names));
 }
 
+static void pc3x3_add_spaccs(void)
+{
+	picoxcell_add_spacc("picoxcell-ipsec", PICOXCELL_IPSEC_BASE,
+			    IRQ_IPSEC, -1);
+	picoxcell_add_spacc("picoxcell-l2", PICOXCELL_CIPHER_BASE,
+			    IRQ_AES, -1);
+}
+
 static void __init pc3x3_init(void)
 {
 	picoxcell_mux_register(pc3x3_mux, ARRAY_SIZE(pc3x3_mux));
@@ -589,4 +597,5 @@ static void __init pc3x3_init(void)
 	pc3x3_init_pm();
 	pc3x3_add_otp();
 	pc3x3_init_bus_snoopers();
+	pc3x3_add_spaccs();
 }
