@@ -478,10 +478,17 @@ static void pc30xx_add_spaccs(void)
 			    IRQ_AES, -1);
 }
 
+static void pc30xx_init_cpufreq(void)
+{
+	if (picoxcell_cpufreq_init(140000, 1000000))
+		pr_err("failed to init cpufreq for pc30xx\n");
+}
+
 static void __init pc30xx_init(void)
 {
 	pc30xx_init_bus_snoopers();
 	pc30xx_add_spaccs();
+	pc30xx_init_cpufreq();
 }
 
 const struct picoxcell_soc pc30xx_soc __initconst = {
