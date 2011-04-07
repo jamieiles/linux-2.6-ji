@@ -21,6 +21,7 @@
 #include <mach/clkdev.h>
 #include <mach/hardware.h>
 
+#include "picoxcell_core.h"
 #include "soc.h"
 
 #define AXI2CFG_INPUT_XTAL_CLOCK_REG_OFFSET		0x006C
@@ -469,9 +470,18 @@ static void pc30xx_init_bus_snoopers(void)
 					  sizeof(pc30xx_snoop_err_names));
 }
 
+static void pc30xx_add_spaccs(void)
+{
+	picoxcell_add_spacc("picoxcell-ipsec-v2", PICOXCELL_IPSEC_BASE,
+			    IRQ_IPSEC, -1);
+	picoxcell_add_spacc("picoxcell-l2-v2", PICOXCELL_CIPHER_BASE,
+			    IRQ_AES, -1);
+}
+
 static void __init pc30xx_init(void)
 {
 	pc30xx_init_bus_snoopers();
+	pc30xx_add_spaccs();
 }
 
 const struct picoxcell_soc pc30xx_soc __initconst = {
