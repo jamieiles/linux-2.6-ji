@@ -353,6 +353,7 @@ static struct clk_lookup pc30xx_clk_lookup[] = {
 	CLK_LOOKUP(NULL,		"arm",		&arm_clk.clk),
 	CLK_LOOKUP("dw_apb_timer.0",	NULL,		&dummy_clk),
 	CLK_LOOKUP("dw_apb_timer.1",	NULL,		&dummy_clk),
+	CLK_LOOKUP(NULL,		"uart",		&dummy_clk),
 };
 
 static void __init pc30xx_clk_init(void)
