@@ -496,7 +496,7 @@ static void pc3x3_init_cpufreq(void)
 		pr_err("failed to init cpufreq for pc3x3\n");
 }
 
-#ifdef CONFIG_PC3X3_STOP_WDT_IN_SUSPEND
+#ifdef CONFIG_PICOXCELL_STOP_WDT_IN_SUSPEND
 static inline void pc3x3_pm_stop_wdt(void)
 {
 	unsigned long syscfg = axi2cfg_readl(AXI2CFG_SYSCFG_REG_OFFSET);
@@ -514,10 +514,10 @@ static inline void pc3x3_pm_restore_wdt(void)
 
 	axi2cfg_writel(syscfg, AXI2CFG_SYSCFG_REG_OFFSET);
 }
-#else /* CONFIG_PC3X3_STOP_WDT_IN_SUSPEND */
+#else /* CONFIG_PICOXCELL_STOP_WDT_IN_SUSPEND */
 static inline void pc3x3_pm_stop_wdt(void) {}
 static inline void pc3x3_pm_restore_wdt(void) {}
-#endif /* CONFIG_PC3X3_STOP_WDT_IN_SUSPEND */
+#endif /* CONFIG_PICOXCELL_STOP_WDT_IN_SUSPEND */
 
 static void pc3x3_init_pm(void)
 {

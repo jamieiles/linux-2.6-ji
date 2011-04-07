@@ -24,8 +24,8 @@ config PICOXCELL_PC30XX
 
 comment "Picochip picoXcell device configuration"
 
-config PC3X3_STOP_WDT_IN_SUSPEND
-	bool "Disable watchdog timer in suspend (PC3X3)"
+config PICOXCELL_STOP_WDT_IN_SUSPEND
+	bool "Disable watchdog timer in suspend"
 	depends on PICOXCELL_PC3X3
 	help
 	  Say yes to pause the watchdog timer when in suspend mode on PC3X3
