@@ -86,4 +86,8 @@
 
 #define NR_IRQS		    72
 
+#define IRQ_PC30XX_BUS_ERR  40
+#define IRQ_PC30XX_UART3    59
+#define IRQ_PC30XX_NAND	    41
+
 #endif /* __IRQS_H__ */
