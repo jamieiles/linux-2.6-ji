@@ -429,8 +429,49 @@ static const struct picoxcell_timer pc30xx_timers[] __initconst = {
 	},
 };
 
+static void pc30xx_init_bus_snoopers(void)
+{
+	static const char *pc30xx_snoop_err_names[32] = {
+		[0]	= "dmac1_channel0 (read)",
+		[1]	= "dmac1_channel1 (read)",
+		[2]	= "dmac1_channel2 (read)",
+		[3]	= "dmac1_channel3 (read)",
+		[4]	= "dmac2_channel0 (read)",
+		[5]	= "dmac2_channel1 (read)",
+		[6]	= "dmac2_channel2 (read)",
+		[7]	= "dmac2_channel3 (read)",
+		[8]	= "emac (read)",
+		[9]	= "cipher (read)",
+		[10]	= "nand (read)",
+		[11]	= "ipsec (read)",
+		[12]	= "dmac1_channel0 (write)",
+		[13]	= "dmac1_channel1 (write)",
+		[14]	= "dmac1_channel2 (write)",
+		[15]	= "dmac1_channel3 (write)",
+		[16]	= "dmac2_channel0 (write)",
+		[17]	= "dmac2_channel1 (write)",
+		[18]	= "dmac2_channel2 (write)",
+		[19]	= "dmac2_channel3 (write)",
+		[20]	= "emac (write)",
+		[21]	= "cipher (write)",
+		[22]	= "nand (write)",
+		[23]	= "ipsec (write)",
+	};
+
+	static struct resource irq = {
+		.start	= IRQ_PC30XX_BUS_ERR,
+		.end	= IRQ_PC30XX_BUS_ERR,
+		.flags	= IORESOURCE_IRQ,
+	};
+
+	platform_device_register_resndata(NULL, "picoxcell-bus-error", -1,
+					  &irq, 1, pc30xx_snoop_err_names,
+					  sizeof(pc30xx_snoop_err_names));
+}
+
 static void __init pc30xx_init(void)
 {
+	pc30xx_init_bus_snoopers();
 }
 
 const struct picoxcell_soc pc30xx_soc __initconst = {
