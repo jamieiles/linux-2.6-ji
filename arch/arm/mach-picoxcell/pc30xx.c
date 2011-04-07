@@ -485,11 +485,40 @@ static void pc30xx_init_cpufreq(void)
 		pr_err("failed to init cpufreq for pc30xx\n");
 }
 
+#ifdef CONFIG_PICOXCELL_STOP_WDT_IN_SUSPEND
+static inline void pc30xx_pm_stop_wdt(void)
+{
+	unsigned long syscfg = axi2cfg_readl(AXI2CFG_SYSCFG_REG_OFFSET);
+
+	syscfg |= (1 << AXI2CFG_SYSCFG_WDG_PAUSE_IDX);
+
+	axi2cfg_writel(syscfg, AXI2CFG_SYSCFG_REG_OFFSET);
+}
+
+static inline void pc30xx_pm_restore_wdt(void)
+{
+	unsigned long syscfg = axi2cfg_readl(AXI2CFG_SYSCFG_REG_OFFSET);
+
+	syscfg &= ~(1 << AXI2CFG_SYSCFG_WDG_PAUSE_IDX);
+
+	axi2cfg_writel(syscfg, AXI2CFG_SYSCFG_REG_OFFSET);
+}
+#else /* CONFIG_PICOXCELL_STOP_WDT_IN_SUSPEND */
+static inline void pc30xx_pm_stop_wdt(void) {}
+static inline void pc30xx_pm_restore_wdt(void) {}
+#endif /* CONFIG_PICOXCELL_STOP_WDT_IN_SUSPEND */
+
+static void pc30xx_init_pm(void)
+{
+	picoxcell_init_pm(pc30xx_pm_stop_wdt, pc30xx_pm_restore_wdt);
+}
+
 static void __init pc30xx_init(void)
 {
 	pc30xx_init_bus_snoopers();
 	pc30xx_add_spaccs();
 	pc30xx_init_cpufreq();
+	pc30xx_init_pm();
 }
 
 const struct picoxcell_soc pc30xx_soc __initconst = {

@@ -26,11 +26,11 @@ comment "Picochip picoXcell device configuration"
 
 config PICOXCELL_STOP_WDT_IN_SUSPEND
 	bool "Disable watchdog timer in suspend"
-	depends on PICOXCELL_PC3X3
+	depends on PICOXCELL_PC3X3 || PICOXCELL_PC30XX
 	help
 	  Say yes to pause the watchdog timer when in suspend mode on PC3X3
-	  devices.  This will prevent the watchdog from rebooting the device
-	  when suspend is entered.
+	  and PC30XX devices.  This will prevent the watchdog from rebooting
+	  the device when suspend is entered.
 
 comment "Picochip picoXcell board selection"
 
