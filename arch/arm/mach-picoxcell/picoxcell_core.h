@@ -34,5 +34,6 @@ extern void __init armgpio_irq_init(void);
 extern int picoxcell_add_uart(unsigned long addr, int irq, int id);
 int __init picoxcell_add_spacc(const char *name, unsigned long addr, int irq,
 			       int id);
+int __init picoxcell_add_trng(unsigned long addr);
 
 #endif /* __ASM_ARCH_PICOXCELL_CORE_H__ */
