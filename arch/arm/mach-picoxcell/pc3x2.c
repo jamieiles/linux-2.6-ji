@@ -213,9 +213,18 @@ static void pc3x2_init_bus_snoopers(void)
 					  sizeof(pc3x2_snoop_err_names));
 }
 
+static void pc3x2_add_spaccs(void)
+{
+	picoxcell_add_spacc("picoxcell-ipsec", PICOXCELL_IPSEC_BASE,
+			    IRQ_IPSEC, -1);
+	picoxcell_add_spacc("picoxcell-l2", PICOXCELL_CIPHER_BASE,
+			    IRQ_AES, -1);
+}
+
 static void __init pc3x2_init(void)
 {
 	picoxcell_mux_register(pc3x2_mux, ARRAY_SIZE(pc3x2_mux));
 	pc3x2_add_gpio();
 	pc3x2_init_bus_snoopers();
+	pc3x2_add_spaccs();
 }
