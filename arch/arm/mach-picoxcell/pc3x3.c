@@ -589,6 +589,11 @@ static void pc3x3_add_spaccs(void)
 			    IRQ_AES, -1);
 }
 
+static void pc3x3_add_trng(void)
+{
+	picoxcell_add_trng(PC3X3_RNG_BASE);
+}
+
 static void __init pc3x3_init(void)
 {
 	picoxcell_mux_register(pc3x3_mux, ARRAY_SIZE(pc3x3_mux));
@@ -598,4 +603,5 @@ static void __init pc3x3_init(void)
 	pc3x3_add_otp();
 	pc3x3_init_bus_snoopers();
 	pc3x3_add_spaccs();
+	pc3x3_add_trng();
 }
