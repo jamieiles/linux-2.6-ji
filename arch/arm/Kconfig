@@ -623,6 +623,7 @@ config ARCH_PICOXCELL
 	select GENERIC_GPIO
 	select HAVE_NET_MACB
 	select ARCH_HAS_CPUFREQ
+	select DW_APB_TIMER_PLATFORM
 	help
 	  This enables support for systems based on the Picochip picoXcell
 	  family of Femtocell devices.

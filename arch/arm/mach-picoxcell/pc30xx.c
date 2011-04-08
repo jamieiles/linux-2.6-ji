@@ -398,39 +398,6 @@ static void __init pc30xx_clk_init(void)
 	clkdev_add_table(pc30xx_clk_lookup, ARRAY_SIZE(pc30xx_clk_lookup));
 }
 
-static const struct picoxcell_timer pc30xx_timers[] __initconst = {
-	{
-		.name	= "timer0",
-		.type	= TIMER_TYPE_TIMER,
-		.base	= PICOXCELL_TIMER_BASE + 0 * TIMER_SPACING,
-		.irq	= IRQ_TIMER0,
-	},
-	{
-		.name	= "timer1",
-		.type	= TIMER_TYPE_TIMER,
-		.base	= PICOXCELL_TIMER_BASE + 1 * TIMER_SPACING,
-		.irq	= IRQ_TIMER1,
-	},
-	{
-		.name	= "timer2",
-		.type	= TIMER_TYPE_TIMER,
-		.base	= PC3X3_TIMER2_BASE + 0 * TIMER_SPACING,
-		.irq	= IRQ_TIMER2,
-	},
-	{
-		.name	= "timer3",
-		.type	= TIMER_TYPE_TIMER,
-		.base	= PC3X3_TIMER2_BASE + 1 * TIMER_SPACING,
-		.irq	= IRQ_TIMER3,
-	},
-	{
-		.name	= "rtc",
-		.type	= TIMER_TYPE_RTC,
-		.base	= PICOXCELL_RTCLK_BASE,
-		.irq	= IRQ_RTC,
-	},
-};
-
 static void pc30xx_init_bus_snoopers(void)
 {
 	static const char *pc30xx_snoop_err_names[32] = {
@@ -524,6 +491,4 @@ static void __init pc30xx_init(void)
 const struct picoxcell_soc pc30xx_soc __initconst = {
 	.init		= pc30xx_init,
 	.init_clocks	= pc30xx_clk_init,
-	.timers		= pc30xx_timers,
-	.nr_timers	= ARRAY_SIZE(pc30xx_timers),
 };

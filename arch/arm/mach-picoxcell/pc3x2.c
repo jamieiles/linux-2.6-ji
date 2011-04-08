@@ -73,46 +73,11 @@ static struct mux_def pc3x2_mux[] = {
 	MUXGPIO(sdgpio0,	-1,	0,	FRACN,	-1,	-1,	0,	7,	MUX_INVERT_PERIPH),
 };
 
-static const struct picoxcell_timer pc3x2_timers[] __initconst = {
-	{
-		.name	= "timer0",
-		.type	= TIMER_TYPE_TIMER,
-		.base	= PICOXCELL_TIMER_BASE + 0 * TIMER_SPACING,
-		.irq	= IRQ_TIMER0,
-	},
-	{
-		.name	= "timer1",
-		.type	= TIMER_TYPE_TIMER,
-		.base	= PICOXCELL_TIMER_BASE + 1 * TIMER_SPACING,
-		.irq	= IRQ_TIMER1,
-	},
-	{
-		.name	= "timer2",
-		.type	= TIMER_TYPE_TIMER,
-		.base	= PICOXCELL_TIMER_BASE + 2 * TIMER_SPACING,
-		.irq	= IRQ_TIMER2,
-	},
-	{
-		.name	= "timer3",
-		.type	= TIMER_TYPE_TIMER,
-		.base	= PICOXCELL_TIMER_BASE + 3 * TIMER_SPACING,
-		.irq	= IRQ_TIMER3,
-	},
-	{
-		.name	= "rtc",
-		.type	= TIMER_TYPE_RTC,
-		.base	= PICOXCELL_RTCLK_BASE,
-		.irq	= IRQ_RTC,
-	},
-};
-
 static void pc3x2_init(void);
 
 const struct picoxcell_soc pc3x2_soc __initconst = {
 	.init		= pc3x2_init,
 	.init_clocks	= pc3x2_clk_init,
-	.timers		= pc3x2_timers,
-	.nr_timers	= ARRAY_SIZE(pc3x2_timers),
 };
 
 static const char * const pc3x2_sdgpio_lo_pins[] = {

@@ -264,6 +264,8 @@ static struct clk_lookup pc3x3_clk_lookup[] = {
 	CLK_LOOKUP("macb",		"pclk",		&dummy_clk),
 	CLK_LOOKUP("macb",		"hclk",		&dummy_clk),
 	CLK_LOOKUP(NULL,		"ref",		&ref_clk),
+	CLK_LOOKUP("dw_apb_timer.0",	NULL,		&dummy_clk),
+	CLK_LOOKUP("dw_apb_timer.1",	NULL,		&dummy_clk),
 };
 
 static void __init pc3x3_clk_init(void)
@@ -365,46 +367,11 @@ static struct mux_def pc3x3_mux[] = {
 	MUXGPIO(sdgpio0,	-1,	0,	FRACN,	-1,	-1,	0,	7,	MUX_INVERT_PERIPH),
 };
 
-static const struct picoxcell_timer pc3x3_timers[] __initconst = {
-	{
-		.name	= "timer0",
-		.type	= TIMER_TYPE_TIMER,
-		.base	= PICOXCELL_TIMER_BASE + 0 * TIMER_SPACING,
-		.irq	= IRQ_TIMER0,
-	},
-	{
-		.name	= "timer1",
-		.type	= TIMER_TYPE_TIMER,
-		.base	= PICOXCELL_TIMER_BASE + 1 * TIMER_SPACING,
-		.irq	= IRQ_TIMER1,
-	},
-	{
-		.name	= "timer2",
-		.type	= TIMER_TYPE_TIMER,
-		.base	= PC3X3_TIMER2_BASE + 0 * TIMER_SPACING,
-		.irq	= IRQ_TIMER2,
-	},
-	{
-		.name	= "timer3",
-		.type	= TIMER_TYPE_TIMER,
-		.base	= PC3X3_TIMER2_BASE + 1 * TIMER_SPACING,
-		.irq	= IRQ_TIMER3,
-	},
-	{
-		.name	= "rtc",
-		.type	= TIMER_TYPE_RTC,
-		.base	= PICOXCELL_RTCLK_BASE,
-		.irq	= IRQ_RTC,
-	},
-};
-
 static void pc3x3_init(void);
 
 const struct picoxcell_soc pc3x3_soc __initconst = {
 	.init		= pc3x3_init,
 	.init_clocks	= pc3x3_clk_init,
-	.timers		= pc3x3_timers,
-	.nr_timers	= ARRAY_SIZE(pc3x3_timers),
 };
 
 static const char * const pc3x3_sdgpio_pins[] = {

@@ -25,8 +25,6 @@ struct picoxcell_timer {
 struct picoxcell_soc {
 	void				(*init)(void);
 	void				(*init_clocks)(void);
-	const struct picoxcell_timer	*timers;
-	int				nr_timers;
 };
 
 extern const struct picoxcell_soc *picoxcell_get_soc(void);
