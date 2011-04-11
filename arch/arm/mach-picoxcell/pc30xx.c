@@ -480,6 +480,46 @@ static void pc30xx_init_pm(void)
 	picoxcell_init_pm(pc30xx_pm_stop_wdt, pc30xx_pm_restore_wdt);
 }
 
+static const char * const pc30xx_sdgpio_pins[] = {
+	"sdgpio0",
+	"sdgpio1",
+	"sdgpio2",
+	"sdgpio3",
+	"sdgpio4",
+	"sdgpio5",
+	"sdgpio6",
+	"sdgpio7",
+	"sdgpio8",
+	"sdgpio9",
+	"sdgpio10",
+	"sdgpio11",
+	"sdgpio12",
+	"sdgpio13",
+	"sdgpio14",
+	"sdgpio15",
+	"sdgpio16",
+	"sdgpio17",
+	"sdgpio18",
+	"sdgpio19",
+	"sdgpio20",
+	"sdgpio21",
+	"sdgpio22",
+	"sdgpio23",
+};
+
+static const struct sdgpio_platform_data pc30xx_sdgpio = {
+	.banks				= {
+		{
+			.names		= pc30xx_sdgpio_pins,
+			.block_base	= 0,
+			.gpio_start	= PC30XX_GPIO_PIN_SDGPIO_0,
+			.nr_pins	= ARRAY_SIZE(pc30xx_sdgpio_pins),
+			.label		= "sdgpio",
+		},
+	},
+	.nr_banks			= 1,
+};
+
 static void pc30xx_add_gpio(void)
 {
 	picoxcell_add_gpio_port(0, 8, PC30XX_GPIO_PIN_ARM_0);
