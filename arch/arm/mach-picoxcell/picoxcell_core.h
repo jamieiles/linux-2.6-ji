@@ -22,4 +22,6 @@ extern void picoxcell_map_io(void);
 extern struct sys_timer picoxcell_sys_timer;
 extern void picoxcell_sched_clock_init(void);
 
+extern int picoxcell_add_gpio_port(int port, int ngpio, int base);
+
 #endif /* __ASM_ARCH_PICOXCELL_CORE_H__ */
