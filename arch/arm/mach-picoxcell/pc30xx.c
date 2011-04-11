@@ -480,12 +480,20 @@ static void pc30xx_init_pm(void)
 	picoxcell_init_pm(pc30xx_pm_stop_wdt, pc30xx_pm_restore_wdt);
 }
 
+static void pc30xx_add_gpio(void)
+{
+	picoxcell_add_gpio_port(0, 8, PC30XX_GPIO_PIN_ARM_0);
+	picoxcell_add_gpio_port(1, 32, PC30XX_GPIO_PIN_ARM_8);
+	picoxcell_add_gpio_port(2, 23, PC30XX_GPIO_PIN_ARM_40);
+}
+
 static void __init pc30xx_init(void)
 {
 	pc30xx_init_bus_snoopers();
 	pc30xx_add_spaccs();
 	pc30xx_init_cpufreq();
 	pc30xx_init_pm();
+	pc30xx_add_gpio();
 }
 
 const struct picoxcell_soc pc30xx_soc __initconst = {
