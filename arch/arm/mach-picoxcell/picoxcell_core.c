@@ -117,4 +117,6 @@ void __init picoxcell_core_init(void)
 
 	soc->init();
 	picoxcell_clk_debugfs_init();
+
+	armgpio_irq_init();
 }
