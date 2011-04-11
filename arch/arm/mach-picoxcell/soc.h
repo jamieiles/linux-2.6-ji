@@ -36,14 +36,14 @@ struct picoxcell_soc {
 	unsigned long			features[BITS_TO_LONGS(NR_FEAT_BITS)];
 };
 
-extern struct picoxcell_soc *picoxcell_get_soc(void);
-extern struct picoxcell_soc pc3x2_soc;
-extern struct picoxcell_soc pc3x3_soc;
-extern struct picoxcell_soc pc30xx_soc;
+extern const struct picoxcell_soc *picoxcell_get_soc(void);
+extern const struct picoxcell_soc pc3x2_soc;
+extern const struct picoxcell_soc pc3x3_soc;
+extern const struct picoxcell_soc pc30xx_soc;
 
 static inline int picoxcell_has_feature(enum picoxcell_features feat)
 {
-	struct picoxcell_soc *soc = picoxcell_get_soc();
+	const struct picoxcell_soc *soc = picoxcell_get_soc();
 
 	return test_bit(feat, soc->features);
 }

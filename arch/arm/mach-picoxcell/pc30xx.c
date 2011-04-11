@@ -354,7 +354,7 @@ static struct clk_lookup pc30xx_clk_lookup[] = {
 	CLK_LOOKUP("dw_apb_timer.1",	NULL,		&dummy_clk),
 };
 
-static void pc30xx_clk_init(void)
+static void __init pc30xx_clk_init(void)
 {
 	static struct clk *amba_clks[] = {
 		&tzprot_clk,
@@ -396,7 +396,7 @@ static void pc30xx_clk_init(void)
 	clkdev_add_table(pc30xx_clk_lookup, ARRAY_SIZE(pc30xx_clk_lookup));
 }
 
-static const struct picoxcell_timer pc30xx_timers[] = {
+static const struct picoxcell_timer pc30xx_timers[] __initconst = {
 	{
 		.name	= "timer0",
 		.type	= TIMER_TYPE_TIMER,
@@ -429,11 +429,11 @@ static const struct picoxcell_timer pc30xx_timers[] = {
 	},
 };
 
-static void pc30xx_init(void)
+static void __init pc30xx_init(void)
 {
 }
 
-struct picoxcell_soc pc30xx_soc = {
+const struct picoxcell_soc pc30xx_soc __initconst = {
 	.init		= pc30xx_init,
 	.init_clocks	= pc30xx_clk_init,
 	.timers		= pc30xx_timers,

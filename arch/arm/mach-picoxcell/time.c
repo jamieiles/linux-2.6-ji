@@ -101,7 +101,7 @@ static irqreturn_t timer_interrupt(int irq, void *dev_id)
 
 #define PICOXCELL_MIN_RANGE	4
 
-static void picoxcell_clockevent_init(struct picoxcell_soc *soc)
+static void picoxcell_clockevent_init(const struct picoxcell_soc *soc)
 {
 	struct timer_instance *inst = &timers[TIMER_ID_CLOCKEVENT];
 	const struct picoxcell_timer *timer = NULL;
@@ -151,7 +151,7 @@ static struct clocksource clocksource_picoxcell = {
 	.flags	    = CLOCK_SOURCE_IS_CONTINUOUS,
 };
 
-static void picoxcell_clocksource_init(struct picoxcell_soc *soc)
+static void picoxcell_clocksource_init(const struct picoxcell_soc *soc)
 {
 	const struct picoxcell_timer *timer = NULL;
 	int i;
@@ -173,7 +173,7 @@ static void picoxcell_clocksource_init(struct picoxcell_soc *soc)
 
 static void __init picoxcell_timer_init(void)
 {
-	struct picoxcell_soc *soc = picoxcell_get_soc();
+	const struct picoxcell_soc *soc = picoxcell_get_soc();
 
 	picoxcell_clocksource_init(soc);
 	picoxcell_clockevent_init(soc);

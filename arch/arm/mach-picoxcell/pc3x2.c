@@ -40,7 +40,7 @@ static struct clk_lookup pc3x2_clk_lookup[] = {
 	CLK_LOOKUP(NULL,		"ref",		&ref_clk),
 };
 
-static void pc3x2_clk_init(void)
+static void __init pc3x2_clk_init(void)
 {
 	picoxcell_clk_add(&dummy_clk);
 	picoxcell_clk_add(&ref_clk);
@@ -73,7 +73,7 @@ static struct mux_def pc3x2_mux[] = {
 	MUXGPIO(sdgpio0,	-1,	0,	FRACN,	-1,	-1,	0,	7,	MUX_INVERT_PERIPH),
 };
 
-static const struct picoxcell_timer pc3x2_timers[] = {
+static const struct picoxcell_timer pc3x2_timers[] __initconst = {
 	{
 		.name	= "timer0",
 		.type	= TIMER_TYPE_TIMER,
@@ -108,7 +108,7 @@ static const struct picoxcell_timer pc3x2_timers[] = {
 
 static void pc3x2_init(void);
 
-struct picoxcell_soc pc3x2_soc = {
+const struct picoxcell_soc pc3x2_soc __initconst = {
 	.init		= pc3x2_init,
 	.init_clocks	= pc3x2_clk_init,
 	.timers		= pc3x2_timers,
@@ -213,7 +213,7 @@ static void pc3x2_init_bus_snoopers(void)
 					  sizeof(pc3x2_snoop_err_names));
 }
 
-static void pc3x2_init(void)
+static void __init pc3x2_init(void)
 {
 	picoxcell_mux_register(pc3x2_mux, ARRAY_SIZE(pc3x2_mux));
 	pc3x2_add_gpio();
