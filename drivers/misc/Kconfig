@@ -475,6 +475,16 @@ config PCH_PHUB
 	  To compile this driver as a module, choose M here: the module will
 	  be called pch_phub.
 
+config PICOXCELL_FUSE
+	tristate "Picochip picoXcell fuse driver"
+	depends on ARCH_PICOXCELL
+	help
+	  This driver enables a sysfs and character device interface to access
+	  the efuse block in picoXcell devices.
+
+	  To compile this driver as a module, choose M here: the module will be
+	  called picoxcell_fuse.
+
 source "drivers/misc/c2port/Kconfig"
 source "drivers/misc/eeprom/Kconfig"
 source "drivers/misc/cb710/Kconfig"
