@@ -1285,6 +1285,13 @@ config SENSORS_MC13783_ADC
         help
           Support for the A/D converter on MC13783 PMIC.
 
+config SENSORS_PC30XX
+	tristate "Picochip PC30XX temperature sensor"
+	depends on ARCH_PICOXCELL
+	help
+	  Support for the onchip temperature sensor in Picochip picoxcell
+	  devices.
+
 if ACPI
 
 comment "ACPI drivers"
