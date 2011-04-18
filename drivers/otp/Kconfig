@@ -32,6 +32,14 @@ config OTP_PC3X3
 	  Say Y or M here to allow support for the OTP found in PC3X3 devices.
 	  If you say M then the module will be called otp_pc3x3.
 
+config OTP_PC30XX
+	tristate "Enable support for Picochip PC30XX OTP"
+	depends on ARCH_PICOXCELL
+	help
+	  Say Y or M here to allow support for the OTP found in PC30XX
+	  devices.  If you say M here then the module will be called
+	  otp_pc30xx.
+
 config BFIN_OTP
 	tristate "Blackfin On-Chip OTP Memory Support"
 	depends on BLACKFIN && (BF51x || BF52x || BF54x)
