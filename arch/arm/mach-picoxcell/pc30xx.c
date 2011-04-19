@@ -623,6 +623,16 @@ static void pc30xx_add_ts(void)
 					  &pdata, sizeof(pdata));
 }
 
+static void pc30xx_add_otp(void)
+{
+	struct resource res = {
+		.start	= PC30XX_OTP_BASE,
+		.end	= PC30XX_OTP_BASE + SZ_32K - 1,
+		.flags	= IORESOURCE_MEM,
+	};
+	platform_device_register_simple("picoxcell-otp-pc30xx", -1, &res, 1);
+}
+
 static void __init pc30xx_init(void)
 {
 	pc30xx_init_bus_snoopers();
@@ -632,6 +642,7 @@ static void __init pc30xx_init(void)
 	pc30xx_add_gpio();
 	pc30xx_add_fuse();
 	pc30xx_add_ts();
+	pc30xx_add_otp();
 }
 
 const struct picoxcell_soc pc30xx_soc __initconst = {
