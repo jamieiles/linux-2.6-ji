@@ -26,6 +26,7 @@
 #include <asm/mach-types.h>
 #include <asm/mach/arch.h>
 
+#include "mux.h"
 #include "picoxcell_core.h"
 
 static long pc7302_panic_blink(int state)
@@ -171,6 +172,12 @@ static struct platform_device pc7302_nand = {
 static void pc7302_init_nand(void)
 {
 	struct clk *ebi_clk = clk_get(NULL, "ebi");
+
+	if (mux_configure_one(picoxcell_is_pc3x3() ? "ebi_addr22" : "arm4",
+			      MUX_ARM)) {
+		pr_err("unable to set ebi_addr22 for use as gpio-nand cle\n");
+		return;
+	}
 
 	if (IS_ERR(ebi_clk)) {
 		pr_err("failed to get EBI clk, unable to register NAND flash\n");
