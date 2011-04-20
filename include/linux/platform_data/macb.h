@@ -8,10 +8,15 @@
 #ifndef __MACB_PDATA_H__
 #define __MACB_PDATA_H__
 
+enum macb_quirks {
+	MACB_QUIRK_NO_UNALIGNED_TX = (1 << 1),
+};
+
 struct macb_platform_data {
 	u32		phy_mask;
 	u8		phy_irq_pin;	/* PHY IRQ */
 	u8		is_rmii;	/* using RMII interface? */
+	unsigned long	quirks;
 };
 
 #endif /* __MACB_PDATA_H__ */

@@ -651,6 +651,42 @@ static void macb_poll_controller(struct net_device *dev)
 }
 #endif
 
+static void skb_align(struct sk_buff *skb, int align)
+{
+	int off = ((unsigned long)skb->data) & (align - 1);
+
+	if (off)
+		skb_reserve(skb, align - off);
+}
+
+static struct sk_buff *tx_skb_align_workaround(struct net_device *dev,
+					       struct sk_buff *skb)
+{
+	struct sk_buff *new_skb;
+
+	/* Alloc new skb */
+	new_skb = dev_alloc_skb(skb->len + 4);
+	if (!new_skb) {
+		if (net_ratelimit()) {
+			netdev_warn(dev,
+				    "Memory squeeze, dropping tx packet.\n");
+		}
+		return NULL;
+	}
+
+	/* Make sure new skb is properly aligned */
+	skb_align(new_skb, 4);
+
+	/* Copy data to new skb ... */
+	skb_copy_from_linear_data(skb, new_skb->data, skb->len);
+	skb_put(new_skb, skb->len);
+
+	/* ... and free an old one */
+	dev_kfree_skb_any(skb);
+
+	return new_skb;
+}
+
 static int macb_start_xmit(struct sk_buff *skb, struct net_device *dev)
 {
 	struct macb *bp = netdev_priv(dev);
@@ -670,6 +706,19 @@ static int macb_start_xmit(struct sk_buff *skb, struct net_device *dev)
 		printk(" %02x", (unsigned int)skb->data[i]);
 	printk("\n");
 #endif
+
+	if ((bp->quirks & MACB_QUIRK_NO_UNALIGNED_TX) &&
+	    ((unsigned long)skb->data) & 0x3) {
+		skb = tx_skb_align_workaround(dev, skb);
+		if (!skb) {
+			/*
+			 * We have lost packet due to memory allocation error
+			 * in tx_skb_align_workaround(). Hopefully original
+			 * skb is still valid, so try transmit it later.
+			 */
+			return NETDEV_TX_BUSY;
+		}
+	}
 
 	len = skb->len;
 	spin_lock_irqsave(&bp->lock, flags);
@@ -1524,6 +1573,9 @@ static int __init macb_probe(struct platform_device *pdev)
 
 	macb_get_hwaddr(bp);
 	pdata = pdev->dev.platform_data;
+
+	if (pdata)
+		bp->quirks = pdata->quirks;
 
 	if (pdata && pdata->is_rmii)
 #if defined(CONFIG_ARCH_AT91)

@@ -573,6 +573,7 @@ struct macb {
 #ifdef CONFIG_PM
 	u32			save_irq_en;
 #endif
+	unsigned long		quirks;
 };
 
 #endif /* _MACB_H */
