@@ -39,6 +39,8 @@ static struct clk_lookup pc3x2_clk_lookup[] = {
 	CLK_LOOKUP("macb",		"pclk",		&dummy_clk),
 	CLK_LOOKUP("macb",		"hclk",		&dummy_clk),
 	CLK_LOOKUP(NULL,		"ref",		&ref_clk),
+	CLK_LOOKUP("dw_apb_timer.0",	NULL,		&dummy_clk),
+	CLK_LOOKUP("dw_apb_timer.1",	NULL,		&dummy_clk),
 };
 
 static void __init pc3x2_clk_init(void)
