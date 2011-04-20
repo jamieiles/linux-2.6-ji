@@ -39,4 +39,8 @@ int __init picoxcell_add_trng(unsigned long addr);
 struct picoxcell_fuse_map;
 extern int __init picoxcell_add_fuse(struct picoxcell_fuse_map *map);
 
+extern int picoxcell_is_pc3x2(void);
+extern int picoxcell_is_pc3x3(void);
+extern int picoxcell_is_pc30xx(void);
+
 #endif /* __ASM_ARCH_PICOXCELL_CORE_H__ */

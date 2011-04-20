@@ -23,7 +23,7 @@
 
 struct dentry *picoxcell_debugfs;
 
-const struct picoxcell_soc __init *picoxcell_get_soc(void)
+int picoxcell_is_pc3x2(void)
 {
 	unsigned long device_id =
 		__raw_readl(IO_ADDRESS(PICOXCELL_AXI2CFG_BASE +
@@ -31,15 +31,63 @@ const struct picoxcell_soc __init *picoxcell_get_soc(void)
 	switch (device_id) {
 	case 0x8003:
 	case 0x8007:
-		return &pc3x2_soc;
+		return 1;
+	default:
+		return 0;
+	}
+}
 
+int picoxcell_is_pc3x3(void)
+{
+	unsigned long device_id =
+		__raw_readl(IO_ADDRESS(PICOXCELL_AXI2CFG_BASE +
+				       AXI2CFG_DEVICE_ID_REG_OFFSET));
+	switch (device_id) {
+	case 0x20:
+	case 0x21:
+	case 0x22:
+		return 1;
+	default:
+		return 0;
+	}
+}
+
+int picoxcell_is_pc30xx(void)
+{
+	unsigned long device_id =
+		__raw_readl(IO_ADDRESS(PICOXCELL_AXI2CFG_BASE +
+				       AXI2CFG_DEVICE_ID_REG_OFFSET));
+	switch (device_id) {
+	case 0x30 ... 0x3F:
+		return 1;
+	default:
+		return 0;
+	}
+}
+
+const struct picoxcell_soc __init *picoxcell_get_soc(void)
+{
+	unsigned long device_id =
+		__raw_readl(IO_ADDRESS(PICOXCELL_AXI2CFG_BASE +
+				       AXI2CFG_DEVICE_ID_REG_OFFSET));
+	switch (device_id) {
+#ifdef CONFIG_PICOXCELL_PC3X2
+	case 0x8003:
+	case 0x8007:
+		return &pc3x2_soc;
+#endif /* CONFIG_PICOXCELL_PC3X2 */
+
+#ifdef CONFIG_PICOXCELL_PC3X3
 	case 0x20:
 	case 0x21:
 	case 0x22:
 		return &pc3x3_soc;
+#endif /* CONFIG_PICOXCELL_PC3X3 */
 
+#ifdef CONFIG_PICOXCELL_PC30XX
 	case 0x30 ... 0x3F:
 		return &pc30xx_soc;
+#endif /* CONFIG_PICOXCELL_PC30XX */
 
 	default:
 		panic("unsupported device type %lx", device_id);
