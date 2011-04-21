@@ -49,6 +49,7 @@ struct mux_def {
 	int			armgpio;
 	int			sdgpio;
 	int			periph;
+	int			periph_b;
 	s16			gpio_reg_offs;
 	s16			gpio_reg_bit;
 	s16			periph_reg;
@@ -79,7 +80,20 @@ extern int mux_configure_table(const struct mux_cfg *cfg,
 	.gpio_reg_bit	= __gpio_bit, \
 	.periph_reg	= __periph_reg, \
 	.periph_bit	= __periph_bit, \
+	.periph_b	= -1, \
 	.flags		= __flags, \
+	.attr		= _SYSDEV_ATTR(__name, 0644, pin_show, pin_store), \
+}
+
+#define MUX2PERIPH(__name, __periph, __periph_b, __periph_reg, \
+		   __periph_bit) { \
+	.name		= #__name, \
+	.armgpio	= -1, \
+	.sdgpio		= -1, \
+	.periph		= MUX_PERIPHERAL_ ## __periph, \
+	.periph_b	= MUX_PERIPHERAL_ ## __periph_b, \
+	.periph_reg	= __periph_reg, \
+	.periph_bit	= __periph_bit, \
 	.attr		= _SYSDEV_ATTR(__name, 0644, pin_show, pin_store), \
 }
 
@@ -93,6 +107,7 @@ extern int mux_configure_table(const struct mux_cfg *cfg,
 	.flags		= MUX_CONFIG_BUS, \
 	.mask		= __mask, \
 	.attr		= _SYSDEV_ATTR(__name, 0644, pin_show, pin_store), \
+	.periph_b	= -1, \
 }
 
 extern void picoxcell_mux_register(struct mux_def *defs, int nr_defs);

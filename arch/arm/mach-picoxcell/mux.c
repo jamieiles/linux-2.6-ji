@@ -134,8 +134,13 @@ static enum mux_setting mux_get_setting(struct mux_def *def)
 		if (def->flags & MUX_INVERT_PERIPH) {
 			if (periph_ctrl & (1 << def->periph_bit))
 				return def->periph;
-		} else if (~periph_ctrl & (1 << def->periph_bit)) {
-			return def->periph;
+			else if (def->periph_b >= 0)
+				return def->periph_b;
+		} else {
+			if (~periph_ctrl & (1 << def->periph_bit))
+				return def->periph;
+			else if (def->periph_b >= 0)
+				return def->periph_b;
 		}
 	}
 
@@ -162,7 +167,8 @@ static int mux_configure(struct mux_def *def, enum mux_setting setting)
 
 	if (!((def->armgpio >= 0 && setting == MUX_ARM) ||
 	      (def->sdgpio >= 0 && setting == MUX_SD) ||
-	      (def->periph >= 0 && setting == def->periph)))
+	      (def->periph >= 0 && setting == def->periph) ||
+	      (def->periph_b >= 0 && setting == def->periph_b)))
 		return -EINVAL;
 
 	if (def->periph > 0) {
@@ -182,6 +188,9 @@ static int mux_configure(struct mux_def *def, enum mux_setting setting)
 				periph_ctrl |= (1 << def->periph_bit);
 		}
 		axi2cfg_writel(periph_ctrl, def->periph_reg);
+
+		if (def->periph_b >= 0 && setting == def->periph_b)
+			return 0;
 	}
 
 	if (setting != def->periph && def->gpio_reg_offs >= 0) {
