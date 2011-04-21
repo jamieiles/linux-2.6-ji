@@ -59,6 +59,7 @@ struct mux_def {
 	u16			mask;
 	unsigned		flags;
 	struct list_head	head;
+	enum mux_setting	(*get_setting)(const struct mux_def *def);
 };
 
 struct mux_cfg {
@@ -108,6 +109,16 @@ extern int mux_configure_table(const struct mux_cfg *cfg,
 	.mask		= __mask, \
 	.attr		= _SYSDEV_ATTR(__name, 0644, pin_show, pin_store), \
 	.periph_b	= -1, \
+}
+
+#define MUXGPIOFUNC(__name, __arm, __sd, __periph, __get_func) { \
+	.name		= #__name, \
+	.armgpio	= __arm, \
+	.sdgpio		= __sd, \
+	.periph		= MUX_PERIPHERAL_ ## __periph, \
+	.get_setting	= __get_func, \
+	.attr		= _SYSDEV_ATTR(__name, 0644, pin_show, pin_store), \
+	.flags		= MUX_RO, \
 }
 
 extern void picoxcell_mux_register(struct mux_def *defs, int nr_defs);

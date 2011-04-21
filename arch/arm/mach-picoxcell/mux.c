@@ -125,6 +125,9 @@ static enum mux_setting mux_get_setting(struct mux_def *def)
 {
 	unsigned long periph_ctrl, gpio_sel;
 
+	if (def->get_setting)
+		return def->get_setting(def);
+
 	if (def->flags & MUX_CONFIG_BUS)
 		return mux_get_config_bus(def);
 
