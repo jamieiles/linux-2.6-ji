@@ -611,6 +611,11 @@ static void pc3x3_add_fuse(void)
 	picoxcell_add_fuse(&pc3x3_fuse_map);
 }
 
+static void pc3x3_add_emac(void)
+{
+	picoxcell_add_emac(PICOXCELL_EMAC_BASE, IRQ_EMAC, 0);
+}
+
 static void __init pc3x3_init(void)
 {
 	picoxcell_mux_register(pc3x3_mux, ARRAY_SIZE(pc3x3_mux));
@@ -622,4 +627,5 @@ static void __init pc3x3_init(void)
 	pc3x3_add_spaccs();
 	pc3x3_add_trng();
 	pc3x3_add_fuse();
+	pc3x3_add_emac();
 }
