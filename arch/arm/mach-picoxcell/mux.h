@@ -12,6 +12,7 @@
 #ifndef __MUX_H__
 #define __MUX_H__
 
+#include <linux/list.h>
 #include <linux/sysdev.h>
 
 #include "soc.h"
@@ -56,6 +57,7 @@ struct mux_def {
 	u16			caddr;
 	u16			mask;
 	unsigned		flags;
+	struct list_head	head;
 };
 
 struct mux_cfg {
