@@ -10,6 +10,7 @@
 
 enum macb_quirks {
 	MACB_QUIRK_NO_UNALIGNED_TX = (1 << 1),
+	MACB_QUIRK_FORCE_DBW64 = (1 << 2),
 };
 
 struct macb_platform_data {

@@ -928,6 +928,14 @@ static u32 macb_dbw(struct macb *bp)
 	if (!bp->is_gem)
 		return 0;
 
+	/*
+	 * Some devices may not have the design configuration registers so
+	 * there is no way of detecting the bus width at run time but we know
+	 * that it is always 64 bits.
+	 */
+	if (bp->quirks & MACB_QUIRK_NO_UNALIGNED_TX)
+		return GEM_BF(DBW, GEM_DBW64);
+
 	switch (GEM_BFEXT(DBWDEF, gem_readl(bp, DCFG1))) {
 	case 4:
 		return GEM_BF(DBW, GEM_DBW128);
