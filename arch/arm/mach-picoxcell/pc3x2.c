@@ -12,6 +12,7 @@
 #include <linux/io.h>
 #include <linux/irq.h>
 #include <linux/kernel.h>
+#include <linux/platform_data/macb.h>
 #include <linux/platform_device.h>
 #include <linux/timex.h>
 #include <linux/platform_data/picoxcell_fuse.h>
@@ -223,6 +224,15 @@ static void pc3x2_add_spaccs(void)
 			    IRQ_AES, -1);
 }
 
+static void pc3x2_add_emac(void)
+{
+	picoxcell_add_emac(PICOXCELL_EMAC_BASE, IRQ_EMAC,
+			   MACB_QUIRK_NO_UNALIGNED_TX |
+			   MACB_QUIRK_FORCE_DBW64 |
+			   MACB_QUIRK_HAVE_TSU |
+			   MACB_QUIRK_HAVE_TSU_CLK);
+}
+
 static void __init pc3x2_init(void)
 {
 	picoxcell_mux_register(pc3x2_mux, ARRAY_SIZE(pc3x2_mux));
@@ -230,4 +240,5 @@ static void __init pc3x2_init(void)
 	pc3x2_init_bus_snoopers();
 	pc3x2_add_spaccs();
 	pc3x2_add_fuse();
+	pc3x2_add_emac();
 }
