@@ -11,6 +11,8 @@
 enum macb_quirks {
 	MACB_QUIRK_NO_UNALIGNED_TX = (1 << 1),
 	MACB_QUIRK_FORCE_DBW64 = (1 << 2),
+	MACB_QUIRK_HAVE_TSU = (1 << 3),
+	MACB_QUIRK_HAVE_TSU_CLK = (1 << 4),
 };
 
 struct macb_platform_data {

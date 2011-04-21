@@ -998,10 +998,12 @@ static int macb_configure_tsu(struct macb *bp)
 	int err;
 
 	/* MACB doesn't have a TSU, but GEM does. */
-	if (!bp->is_gem || !(gem_readl(bp, DCFG5) & GEM_BIT(TSU)))
+	if (!bp->is_gem || (!(gem_readl(bp, DCFG5) & GEM_BIT(TSU)) &&
+			    !(bp->quirks & MACB_QUIRK_HAVE_TSU)))
 		return 0;
 
-	if (gem_readl(bp, DCFG5) & GEM_BIT(TSUCLK))
+	if ((gem_readl(bp, DCFG5) & GEM_BIT(TSUCLK)) ||
+	    (bp->quirks & MACB_QUIRK_HAVE_TSU_CLK))
 		bp->tsu = clk_get(&bp->pdev->dev, "tsu");
 	else
 		bp->tsu = bp->pclk;
