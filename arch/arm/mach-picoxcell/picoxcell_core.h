@@ -35,6 +35,8 @@ extern int picoxcell_add_uart(unsigned long addr, int irq, int id);
 int __init picoxcell_add_spacc(const char *name, unsigned long addr, int irq,
 			       int id);
 int __init picoxcell_add_trng(unsigned long addr);
+extern int __init picoxcell_add_emac(unsigned long addr, int irq,
+				     unsigned long quirks);
 
 struct picoxcell_fuse_map;
 extern int __init picoxcell_add_fuse(struct picoxcell_fuse_map *map);

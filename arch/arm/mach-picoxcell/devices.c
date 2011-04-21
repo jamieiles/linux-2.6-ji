@@ -10,7 +10,6 @@
 #include <linux/dma-mapping.h>
 #include <linux/dw_dmac.h>
 #include <linux/platform_device.h>
-#include <linux/platform_data/macb.h>
 #include <linux/init.h>
 #include <linux/interrupt.h>
 #include <linux/io.h>
@@ -33,34 +32,6 @@ static struct platform_device pmu_device = {
 	.id			= ARM_PMU_DEVICE_CPU,
 	.num_resources		= 1,
 	.resource		= &pmu_resource,
-};
-
-static struct resource eth_resources[] = {
-	[0] = {
-		.start		= PICOXCELL_EMAC_BASE,
-		.end		= PICOXCELL_EMAC_BASE + 0xFFFF,
-		.flags		= IORESOURCE_MEM,
-	},
-	[1] = {
-		.start		= IRQ_EMAC,
-		.end		= IRQ_EMAC,
-		.flags		= IORESOURCE_IRQ,
-	},
-};
-
-static u64 eth_dmamask = DMA_BIT_MASK(32);
-static struct macb_platform_data eth_data;
-
-static struct platform_device eth_device = {
-	.name			= "macb",
-	.id			= -1,
-	.dev			= {
-		.dma_mask	= &eth_dmamask,
-		.coherent_dma_mask = DMA_BIT_MASK(32),
-		.platform_data	= &eth_data,
-	},
-	.resource		= eth_resources,
-	.num_resources		= ARRAY_SIZE(eth_resources),
 };
 
 static struct resource dmac0_resources[] = {
@@ -128,7 +99,6 @@ static struct platform_device dmac1_device = {
 
 static struct platform_device *common_devices[] __initdata = {
 	&pmu_device,
-	&eth_device,
 	&dmac0_device,
 	&dmac1_device,
 };
