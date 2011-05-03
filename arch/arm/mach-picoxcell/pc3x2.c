@@ -126,10 +126,34 @@ static const struct sdgpio_platform_data pc3x2_sdgpio = {
 	.nr_banks			= 2,
 };
 
+static const char *const pc3x2_porta_names[] = {
+	"arm0",
+	"arm1",
+	"arm2",
+	"arm3",
+	"arm4",
+	"arm5",
+	"arm6",
+	"arm7",
+};
+
+static const char *const pc3x2_portb_names[] = {
+	"arm8",
+	"arm9",
+	"arm10",
+	"arm11",
+	"arm12",
+	"arm13",
+	"arm14",
+	"arm15",
+};
+
 static void pc3x2_add_gpio(void)
 {
-	picoxcell_add_gpio_port(0, 8, PC3X2_GPIO_PIN_ARM_0);
-	picoxcell_add_gpio_port(1, 8, PC3X2_GPIO_PIN_ARM_8);
+	picoxcell_add_gpio_port(0, 8, PC3X2_GPIO_PIN_ARM_0,
+				pc3x2_porta_names);
+	picoxcell_add_gpio_port(1, 8, PC3X2_GPIO_PIN_ARM_8,
+				pc3x2_portb_names);
 	platform_device_register_data(NULL, "sdgpio", -1, &pc3x2_sdgpio,
 		sizeof(pc3x2_sdgpio));
 }

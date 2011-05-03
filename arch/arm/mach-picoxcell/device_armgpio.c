@@ -27,7 +27,8 @@
 		.name = #__name, \
 	}
 
-int __init picoxcell_add_gpio_port(int port, int ngpio, int base)
+int __init picoxcell_add_gpio_port(int port, int ngpio, int base,
+				   const char *const *names)
 {
 	struct resource res[] = {
 		GPIO_RES(dat, PICOXCELL_GPIO_BASE + 0x50 + port * 4),
@@ -37,6 +38,7 @@ int __init picoxcell_add_gpio_port(int port, int ngpio, int base)
 	struct bgpio_pdata pdata = {
 		.base = base,
 		.ngpio = ngpio,
+		.names = names,
 	};
 	struct platform_device *pdev = platform_device_register_resndata(NULL,
 		"basic-mmio-gpio", port, res, ARRAY_SIZE(res), &pdata,

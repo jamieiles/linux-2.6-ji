@@ -523,11 +523,86 @@ static const struct sdgpio_platform_data pc30xx_sdgpio = {
 	.nr_banks			= 1,
 };
 
+static const char *const pc30xx_porta_names[] = {
+	"usim_clk",
+	"usim_io",
+	"usim_vcc",
+	"usim_rst",
+	"usim_cd",
+	"sw_rst",
+	"per_rst",
+	"mii_phy_irq",
+};
+
+static const char *const pc30xx_portb_names[] = {
+	"arm8",
+	"arm9",
+	"arm10",
+	"arm11",
+	"arm12",
+	"arm13",
+	"gps_hclk",
+	"arm15",
+	"gps_do",
+	"gps_clk",
+	"gps_di",
+	"gps_frm",
+	"arm20",
+	"arm21",
+	"arm22",
+	"arm23",
+	"arm24",
+	"arm25",
+	"arm26",
+	"arm27",
+	"arm28",
+	"arm29",
+	"arm30",
+	"arm31",
+	"arm32",
+	"arm33",
+	"arm34",
+	"arm35",
+	"arm36",
+	"arm37",
+	"arm38",
+	"arm39",
+};
+
+static const char *const pc30xx_portc_names[] = {
+	"arm40",
+	"arm41",
+	"arm42",
+	"arm43",
+	"arm44",
+	"arm45",
+	"arm46",
+	"arm47",
+	"arm48",
+	"arm49",
+	"arm50",
+	"arm51",
+	"arm52",
+	"arm53",
+	"arm54",
+	"arm55",
+	"arm56",
+	"arm57",
+	"arm58",
+	"arm59",
+	"arm60",
+	"arm61",
+	"arm62",
+};
+
 static void pc30xx_add_gpio(void)
 {
-	picoxcell_add_gpio_port(0, 8, PC30XX_GPIO_PIN_ARM_0);
-	picoxcell_add_gpio_port(1, 32, PC30XX_GPIO_PIN_ARM_8);
-	picoxcell_add_gpio_port(2, 23, PC30XX_GPIO_PIN_ARM_40);
+	picoxcell_add_gpio_port(0, 8, PC30XX_GPIO_PIN_ARM_0,
+				pc30xx_porta_names);
+	picoxcell_add_gpio_port(1, 32, PC30XX_GPIO_PIN_ARM_8,
+				pc30xx_portb_names);
+	picoxcell_add_gpio_port(2, 23, PC30XX_GPIO_PIN_ARM_40,
+				pc30xx_portc_names);
 }
 
 static struct picoxcell_fuse_map pc30xx_fuse_map = {

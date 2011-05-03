@@ -415,11 +415,78 @@ static const struct sdgpio_platform_data pc3x3_sdgpio = {
 	.nr_banks			= 1,
 };
 
+static const char *const pc3x3_porta_names[] = {
+	"arm0",
+	"arm1",
+	"arm2",
+	"arm3",
+	"arm4",
+	"arm5",
+	"arm6",
+	"arm7",
+};
+
+static const char *const pc3x3_portb_names[] = {
+	"arm8",
+	"arm9",
+	"arm10",
+	"arm11",
+	"arm12",
+	"arm13",
+	"arm14",
+	"arm15",
+	"arm16",
+	"arm17",
+	"arm18",
+	"arm19",
+	"arm20",
+	"arm21",
+	"arm22",
+	"arm23",
+};
+
+static const char *const pc3x3_portd_names[] = {
+	"arm24",
+	"arm25",
+	"arm26",
+	"arm27",
+	"arm28",
+	"arm29",
+	"arm30",
+	"arm31",
+	"arm32",
+	"arm33",
+	"arm34",
+	"arm35",
+	"arm36",
+	"arm37",
+	"arm38",
+	"arm39",
+	"arm40",
+	"arm41",
+	"arm42",
+	"arm43",
+	"arm44",
+	"arm45",
+	"arm46",
+	"arm47",
+	"arm48",
+	"arm49",
+	"arm50",
+	"arm51",
+	"arm52",
+	"arm53",
+	"arm54",
+};
+
 static void pc3x3_add_gpio(void)
 {
-	picoxcell_add_gpio_port(0, 8, PC3X3_GPIO_PIN_ARM_0);
-	picoxcell_add_gpio_port(1, 16, PC3X3_GPIO_PIN_ARM_8);
-	picoxcell_add_gpio_port(3, 30, PC3X3_GPIO_PIN_ARM_24);
+	picoxcell_add_gpio_port(0, 8, PC3X3_GPIO_PIN_ARM_0,
+				pc3x3_porta_names);
+	picoxcell_add_gpio_port(1, 16, PC3X3_GPIO_PIN_ARM_8,
+				pc3x3_portb_names);
+	picoxcell_add_gpio_port(3, 30, PC3X3_GPIO_PIN_ARM_24,
+				pc3x3_portd_names);
 	platform_device_register_data(NULL, "sdgpio", -1, &pc3x3_sdgpio,
 		sizeof(pc3x3_sdgpio));
 }
