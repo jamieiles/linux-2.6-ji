@@ -459,6 +459,7 @@ static int __devinit bgpio_probe(struct platform_device *pdev)
 		bgc->gc.base = pdata->base;
 		if (pdata->ngpio > 0)
 			ngpio = pdata->ngpio;
+		bgc->gc.names = pdata->names;
 	} else {
 		bgc->gc.base = -1;
 	}
