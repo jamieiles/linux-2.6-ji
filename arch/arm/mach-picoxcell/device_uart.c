@@ -19,7 +19,8 @@
 
 #define UART_USR_REG_OFFSET			0x7C
 
-int __init picoxcell_add_uart(unsigned long addr, int irq, int id)
+struct platform_device * __init picoxcell_add_uart(unsigned long addr,
+						   int irq, int id)
 {
 	struct plat_serial8250_port pdata[] = {
 		{
@@ -53,7 +54,7 @@ int __init picoxcell_add_uart(unsigned long addr, int irq, int id)
 	int err;
 
 	if (IS_ERR(uart_clk))
-		return PTR_ERR(uart_clk);
+		return (struct platform_device *)uart_clk;
 
 	err = clk_enable(uart_clk);
 	if (err)
@@ -68,13 +69,13 @@ int __init picoxcell_add_uart(unsigned long addr, int irq, int id)
 		goto out_disable_clk;
 	}
 
-	return 0;
+	return pdev;
 
 out_disable_clk:
 	clk_disable(uart_clk);
 out_put_clk:
 	clk_put(uart_clk);
 
-	return err;
+	return ERR_PTR(err);
 }
 
