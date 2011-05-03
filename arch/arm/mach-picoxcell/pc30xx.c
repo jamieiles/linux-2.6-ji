@@ -726,6 +726,11 @@ static struct mux_def pc30xx_labs_mux[] __used = {
 	MUXGPIOFUNC(mii_tx_clk,		46,	-1,	MII,	mii_get_mux),
 };
 
+static void pc30xx_add_trng(void)
+{
+	picoxcell_add_trng(PC3X3_RNG_BASE);
+}
+
 static void __init pc30xx_init(void)
 {
 	unsigned long device_id = axi2cfg_readl(AXI2CFG_DEVICE_ID_REG_OFFSET);
@@ -747,6 +752,7 @@ static void __init pc30xx_init(void)
 	pc30xx_add_fuse();
 	pc30xx_add_ts();
 	pc30xx_add_otp();
+	pc30xx_add_trng();
 }
 
 const struct picoxcell_soc pc30xx_soc __initconst = {
