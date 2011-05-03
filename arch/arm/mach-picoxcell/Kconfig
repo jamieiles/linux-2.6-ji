@@ -46,4 +46,13 @@ config BOARD_PC7302
 config PICOXCELL_HAVE_TSU
 	bool
 
+config PICOXCELL_UICC
+	bool "Support for UART based UICC controller"
+	depends on PICOXCELL_PC30XX
+	help
+	  Say Y here to include support for the UART based UICC controller.
+	  This uses a UART along with some GPIO pins to allow userspace to
+	  read/write UICC devices.  The protocol implementation is handled in
+	  userspace.
+
 endif

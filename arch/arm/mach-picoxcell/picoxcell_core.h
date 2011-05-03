@@ -42,6 +42,8 @@ extern int __init picoxcell_add_emac(unsigned long addr, int irq,
 
 struct picoxcell_fuse_map;
 extern int __init picoxcell_add_fuse(struct picoxcell_fuse_map *map);
+extern int __init picoxcell_add_uicc(unsigned long addr, int irq, int id,
+				     bool data_invert);
 
 extern int picoxcell_is_pc3x2(void);
 extern int picoxcell_is_pc3x3(void);

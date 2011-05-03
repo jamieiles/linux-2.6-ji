@@ -37,6 +37,7 @@ static const char *mux_peripheral_names[NR_MUX_SETTINGS] = {
 	[MUX_PERIPHERAL_SSI]	= "ssi",
 	[MUX_PERIPHERAL_MII]	= "mii",
 	[MUX_PERIPHERAL_MAXIM]	= "maxim",
+	[MUX_PERIPHERAL_USIM]	= "usim",
 };
 
 static int mux_periph_name_to_id(const char *name)

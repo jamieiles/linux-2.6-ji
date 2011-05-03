@@ -711,8 +711,8 @@ static void pc30xx_add_otp(void)
 
 static struct mux_def pc30xx_hnb_mux[] = {
 	/*	Name		ARM	SD	PERIPH	REG	BIT	PERREG	PERBIT	FLAGS */
-	MUXGPIO(usim_clk,	0,	16,	RSVD,	0x34,	0,	-1,	-1,	0),
-	MUXGPIO(usim_io,	1,	17,	RSVD,	0x34,	1,	-1,	-1,	0),
+	MUXGPIO(usim_clk,	0,	16,	USIM,	0x34,	0,	0xc0,	4,	MUX_INVERT_PERIPH),
+	MUXGPIO(usim_io,	1,	17,	USIM,	0x34,	1,	0xc0,	1,	MUX_INVERT_PERIPH),
 	MUXGPIO(usim_vcc,	2,	18,	RSVD,	0x34,	2,	-1,	-1,	0),
 	MUXGPIO(usim_rst,	3,	19,	RSVD,	0x34,	3,	-1,	-1,	0),
 	MUXGPIO(usim_cd,	4,	20,	RSVD,	0x34,	4,	-1,	-1,	0),

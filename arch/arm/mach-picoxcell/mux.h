@@ -29,6 +29,7 @@ enum mux_setting {
 	MUX_PERIPHERAL_SSI,
 	MUX_PERIPHERAL_MII,
 	MUX_PERIPHERAL_MAXIM,
+	MUX_PERIPHERAL_USIM,
 	NR_MUX_SETTINGS,
 };
 
@@ -66,6 +67,9 @@ struct mux_cfg {
 	const char		*name;
 	enum mux_setting	setting;
 };
+
+#define MUXCFG(__name, __setting) \
+	{ .name = __name, .setting = __setting }
 
 extern int mux_configure_one(const char *name, enum mux_setting setting);
 extern int mux_configure_table(const struct mux_cfg *cfg,
