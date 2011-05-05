@@ -474,6 +474,7 @@ struct nand_buf {
 
 #define INTEL_CE4100	1
 #define INTEL_MRST	2
+#define MMIO		3
 
 struct denali_nand_info {
 	struct mtd_info mtd;
