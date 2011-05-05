@@ -16,14 +16,12 @@
  * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  *
  */
-
 #include <linux/interrupt.h>
 #include <linux/delay.h>
 #include <linux/dma-mapping.h>
 #include <linux/wait.h>
 #include <linux/mutex.h>
 #include <linux/slab.h>
-#include <linux/pci.h>
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/partitions.h>
 #include <linux/module.h>
@@ -89,13 +87,6 @@ MODULE_PARM_DESC(onfi_timing_mode, "Overrides default ONFI setting."
 /* this is a helper macro that allows us to
  * format the bank into the proper bits for the controller */
 #define BANK(x) ((x) << 24)
-
-/* List of platforms this NAND controller has be integrated into */
-static const struct pci_device_id denali_pci_ids[] = {
-	{ PCI_VDEVICE(INTEL, 0x0701), INTEL_CE4100 },
-	{ PCI_VDEVICE(INTEL, 0x0809), INTEL_MRST },
-	{ /* end: all zeroes */ }
-};
 
 /* forward declarations */
 static void clear_interrupts(struct denali_nand_info *denali);
@@ -1411,24 +1402,23 @@ void denali_drv_init(struct denali_nand_info *denali)
 	denali->irq_status = 0;
 }
 
-/* driver entry point */
-static int denali_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
+int denali_init(struct denali_nand_info *denali)
 {
-	int ret = -ENODEV;
-	resource_size_t csr_base, mem_base;
-	unsigned long csr_len, mem_len;
-	struct denali_nand_info *denali;
 	int ret;
 	struct denali_nand_pdata *pdata;
 	struct mtd_partition *partitions = NULL;
 	int nr_parts = 0;
 	const char *part_probes[] = { "cmdlinepart", NULL };
 
-	denali = kzalloc(sizeof(*denali), GFP_KERNEL);
-	if (!denali)
-		return -ENOMEM;
-
-	denali->dev = &dev->dev;
+	if (denali->platform == INTEL_CE4100) {
+		/* Due to a silicon limitation, we can only support
+		 * ONFI timing mode 1 and below.
+		 */
+		if (onfi_timing_mode < -1 || onfi_timing_mode > 1) {
+			dev_err(denali->dev, "Intel CE4100 only supports ONFI timing mode 1 or below\n");
+			return -EINVAL;
+		}
+	}
 
 	pdata = dev_get_platdata(denali->dev);
 	if (pdata && pdata->nr_ecc_bits > 8)
@@ -1436,95 +1426,34 @@ static int denali_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
 	else
 		denali->nr_ecc_bits = 8;
 
-	ret = pci_enable_device(dev);
-	if (ret) {
-		dev_err(denali->dev, "Spectra: pci_enable_device failed.\n");
-		goto failed_alloc_memery;
-	}
-
-	denali->have_hw_ecc_fixup = pdata ? pdata->have_hw_ecc_fixup : false;
-
-	if (id->driver_data == INTEL_CE4100) {
-		/* Due to a silicon limitation, we can only support
-		 * ONFI timing mode 1 and below.
-		 */
-		if (onfi_timing_mode < -1 || onfi_timing_mode > 1) {
-			dev_err(denali->dev, "Intel CE4100 only supports ONFI timing mode 1 or below\n");
-			ret = -EINVAL;
-			goto failed_enable_dev;
-		}
-		denali->platform = INTEL_CE4100;
-		mem_base = pci_resource_start(dev, 0);
-		mem_len = pci_resource_len(dev, 1);
-		csr_base = pci_resource_start(dev, 1);
-		csr_len = pci_resource_len(dev, 1);
-	} else {
-		denali->platform = INTEL_MRST;
-		csr_base = pci_resource_start(dev, 0);
-		csr_len = pci_resource_len(dev, 0);
-		mem_base = pci_resource_start(dev, 1);
-		mem_len = pci_resource_len(dev, 1);
-		if (!mem_len) {
-			mem_base = csr_base + csr_len;
-			mem_len = csr_len;
-		}
-	}
-
 	/* Is 32-bit DMA supported? */
-	ret = dma_set_mask(&dev->dev, DMA_BIT_MASK(32));
+	ret = dma_set_mask(denali->dev, DMA_BIT_MASK(32));
 	if (ret) {
-		dev_err(denali->dev, "Spectra: no usable DMA configuration\n");
-		goto failed_enable_dev;
+		printk(KERN_ERR "Spectra: no usable DMA configuration\n");
+		return ret;
 	}
-	denali->buf.dma_buf = dma_map_single(&dev->dev, denali->buf.buf,
+	denali->buf.dma_buf = dma_map_single(denali->dev, denali->buf.buf,
 					     DENALI_BUF_SIZE,
 					     DMA_BIDIRECTIONAL);
 
 	if (dma_mapping_error(denali->dev, denali->buf.dma_buf)) {
-		dev_err(&dev->dev, "Spectra: failed to map DMA buffer\n");
-		goto failed_enable_dev;
+		dev_err(denali->dev, "Spectra: failed to map DMA buffer\n");
+		return -EIO;
 	}
-
-	pci_set_master(dev);
-	denali->mtd.dev.parent = &dev->dev;
-
-	ret = pci_request_regions(dev, DENALI_NAND_NAME);
-	if (ret) {
-		dev_err(denali->dev, "Spectra: Unable to request memory regions\n");
-		goto failed_dma_map;
-	}
-
-	denali->flash_reg = ioremap_nocache(csr_base, csr_len);
-	if (!denali->flash_reg) {
-		dev_err(denali->dev, "Spectra: Unable to remap memory region\n");
-		ret = -ENOMEM;
-		goto failed_req_regions;
-	}
-
-	denali->flash_mem = ioremap_nocache(mem_base, mem_len);
-	if (!denali->flash_mem) {
-		dev_err(denali->dev, "Spectra: ioremap_nocache failed!");
-		ret = -ENOMEM;
-		goto failed_remap_reg;
-	}
-
+	denali->mtd.dev.parent = denali->dev;
 	denali_hw_init(denali);
 	denali_drv_init(denali);
 
 	/* denali_isr register is done after all the hardware
 	 * initilization is finished*/
-	if (request_irq(dev->irq, denali_isr, IRQF_SHARED,
+	if (request_irq(denali->irq, denali_isr, IRQF_SHARED,
 			DENALI_NAND_NAME, denali)) {
-		dev_err(denali->dev, "Spectra: Unable to allocate IRQ\n");
-		ret = -ENODEV;
-		goto failed_remap_mem;
+		printk(KERN_ERR "Spectra: Unable to allocate IRQ\n");
+		return -ENODEV;
 	}
 
 	/* now that our ISR is registered, we can enable interrupts */
 	denali_set_intr_modes(denali, true);
-
-	pci_set_drvdata(dev, denali);
-
 	denali->mtd.name = "denali-nand";
 	denali->mtd.owner = THIS_MODULE;
 	denali->mtd.priv = &denali->nand;
@@ -1666,63 +1595,15 @@ static int denali_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
 	return 0;
 
 failed_req_irq:
-	denali_irq_cleanup(dev->irq, denali);
-failed_remap_mem:
-	iounmap(denali->flash_mem);
-failed_remap_reg:
-	iounmap(denali->flash_reg);
-failed_req_regions:
-	pci_release_regions(dev);
-failed_dma_map:
-	dma_unmap_single(&dev->dev, denali->buf.dma_buf, DENALI_BUF_SIZE,
-			 DMA_BIDIRECTIONAL);
-failed_enable_dev:
-	pci_disable_device(dev);
-failed_alloc_memery:
-	kfree(denali);
+	denali_irq_cleanup(denali->irq, denali);
+
 	return ret;
 }
 
-/* driver exit point */
-static void denali_pci_remove(struct pci_dev *dev)
+void denali_remove(struct denali_nand_info *denali)
 {
-	struct denali_nand_info *denali = pci_get_drvdata(dev);
-
 	nand_release(&denali->mtd);
-	mtd_device_unregister(&denali->mtd);
-
-	denali_irq_cleanup(dev->irq, denali);
-
-	iounmap(denali->flash_reg);
-	iounmap(denali->flash_mem);
-	pci_release_regions(dev);
-	pci_disable_device(dev);
-	dma_unmap_single(&dev->dev, denali->buf.dma_buf, DENALI_BUF_SIZE,
+	denali_irq_cleanup(denali->irq, denali);
+	dma_unmap_single(denali->dev, denali->buf.dma_buf, DENALI_BUF_SIZE,
 			 DMA_BIDIRECTIONAL);
-	pci_set_drvdata(dev, NULL);
-	kfree(denali);
 }
-
-MODULE_DEVICE_TABLE(pci, denali_pci_ids);
-
-static struct pci_driver denali_pci_driver = {
-	.name = DENALI_NAND_NAME,
-	.id_table = denali_pci_ids,
-	.probe = denali_pci_probe,
-	.remove = denali_pci_remove,
-};
-
-static int __init denali_init(void)
-{
-	pr_info("Spectra MTD driver built on %s @ %s\n", __DATE__, __TIME__);
-	return pci_register_driver(&denali_pci_driver);
-}
-
-/* Free memory */
-static void __exit denali_exit(void)
-{
-	pci_unregister_driver(&denali_pci_driver);
-}
-
-module_init(denali_init);
-module_exit(denali_exit);
