@@ -54,7 +54,7 @@ static void pc7302_panic_init(void)
 static struct mtd_partition pc7302_nor_partitions[] = {
 	{
 		.name		= "Boot",
-		.size		= SZ_128K,
+		.size		= SZ_256K,
 		.offset		= 0,
 	},
 	{
