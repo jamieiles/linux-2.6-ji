@@ -231,6 +231,14 @@
 #define     INTR_STATUS__PIPE_CMD_ERR			0x4000
 #define     INTR_STATUS__PAGE_XFER_INC			0x8000
 
+/*
+ * Some versions of the IP have the ECC fixup handled in hardware.  In this
+ * configuration we only get interrupted when the error is uncorrectable.
+ * Unfortunately this bit replaces INTR_STATUS__ECC_TRANSACTION_DONE from the
+ * old IP.
+ */
+#define     INTR_STATUS__ECC_UNCOR_ERR			0x0001
+
 #define     INTR_EN__ECC_TRANSACTION_DONE		0x0001
 #define     INTR_EN__ECC_ERR				0x0002
 #define     INTR_EN__DMA_CMD_COMP			0x0004
@@ -495,6 +503,7 @@ struct denali_nand_info {
 	uint32_t bbtskipbytes;
 	uint32_t max_banks;
 	int nr_ecc_bits;
+	bool have_hw_ecc_fixup;
 };
 
 #endif /*_LLD_NAND_*/

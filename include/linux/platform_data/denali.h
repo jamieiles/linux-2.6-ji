@@ -16,6 +16,7 @@
 
 struct denali_nand_pdata {
 	int	nr_ecc_bits;
+	bool	have_hw_ecc_fixup;
 };
 
 #endif /* __DENALI_PDATA_H__ */

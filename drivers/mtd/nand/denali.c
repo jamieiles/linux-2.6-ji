@@ -55,7 +55,8 @@ MODULE_PARM_DESC(onfi_timing_mode, "Overrides default ONFI setting."
 			INTR_STATUS__TIME_OUT | \
 			INTR_STATUS__ERASE_FAIL | \
 			INTR_STATUS__RST_COMP | \
-			INTR_STATUS__ERASE_COMP)
+			INTR_STATUS__ERASE_COMP | \
+			INTR_STATUS__ECC_UNCOR_ERR)
 
 /* indicates whether or not the internal value for the flash bank is
  * valid or not */
@@ -921,6 +922,14 @@ static bool handle_ecc(struct denali_nand_info *denali, uint8_t *buf,
 {
 	bool check_erased_page = false;
 
+	if (denali->have_hw_ecc_fixup &&
+	    (irq_status & INTR_STATUS__ECC_UNCOR_ERR)) {
+		clear_interrupts(denali);
+		denali_set_intr_modes(denali, true);
+
+		return true;
+	}
+
 	if (irq_status & INTR_STATUS__ECC_ERR) {
 		/* read the ECC errors. we'll ignore them for now */
 		uint32_t err_address = 0, err_correction_info = 0;
@@ -1120,8 +1129,9 @@ static int denali_read_page(struct mtd_info *mtd, struct nand_chip *chip,
 	size_t size = denali->mtd.writesize + denali->mtd.oobsize;
 
 	uint32_t irq_status = 0;
-	uint32_t irq_mask = INTR_STATUS__ECC_TRANSACTION_DONE |
-			    INTR_STATUS__ECC_ERR;
+	uint32_t irq_mask = denali->have_hw_ecc_fixup ?
+		(INTR_STATUS__ECC_TRANSACTION_DONE | INTR_STATUS__ECC_ERR) :
+		(INTR_STATUS__DMA_CMD_COMP | INTR_STATUS__ECC_UNCOR_ERR);
 	bool check_erased_page = false;
 
 	if (page != denali->page) {
@@ -1440,6 +1450,8 @@ static int denali_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
 		printk(KERN_ERR "Spectra: pci_enable_device failed.\n");
 		goto failed_alloc_memery;
 	}
+
+	denali->have_hw_ecc_fixup = pdata ? pdata->have_hw_ecc_fixup : false;
 
 	if (id->driver_data == INTEL_CE4100) {
 		/* Due to a silicon limitation, we can only support
