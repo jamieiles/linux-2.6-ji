@@ -20,3 +20,4 @@ obj-$(CONFIG_CPU_FREQ)		+= cpufreq.o
 obj-$(CONFIG_PM)		+= pm.o
 obj-$(CONFIG_PICOXCELL_HAVE_TSU)+= tsu.o
 obj-$(CONFIG_PICOXCELL_UICC)	+= device_uicc.o
+obj-$(CONFIG_PC30XX_HW_NAND)	+= device_hw_nand.o

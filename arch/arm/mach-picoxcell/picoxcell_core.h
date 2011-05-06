@@ -45,6 +45,18 @@ extern int __init picoxcell_add_fuse(struct picoxcell_fuse_map *map);
 extern int __init picoxcell_add_uicc(unsigned long addr, int irq, int id,
 				     bool data_invert);
 
+struct mtd_partition;
+#ifdef CONFIG_PC30XX_HW_NAND
+extern int __init picoxcell_add_hw_nand(const struct mtd_partition *parts,
+					unsigned int nr_parts);
+#else /* CONFIG_PC30XX_HW_NAND */
+static inline int picoxcell_add_hw_nand(const struct mtd_partition *parts,
+					unsigned int nr_parts)
+{
+	return -ENODEV;
+}
+#endif /* CONFIG_PC30XX_HW_NAND */
+
 extern int picoxcell_is_pc3x2(void);
 extern int picoxcell_is_pc3x3(void);
 extern int picoxcell_is_pc30xx(void);

@@ -32,6 +32,14 @@ config PICOXCELL_STOP_WDT_IN_SUSPEND
 	  and PC30XX devices.  This will prevent the watchdog from rebooting
 	  the device when suspend is entered.
 
+config PC30XX_HW_NAND
+	bool "Hardware NAND flash support for PC30XX"
+	depends on PICOXCELL_PC30XX
+	help
+	  Say yes here to enable hardware NAND support for PC30XX devices.
+	  The PC30XX devices contain a Denali NAND controller.  You will also
+	  need to enable MTD_NAND_DENALI_MMIO to get the device driver built.
+
 comment "Picochip picoXcell board selection"
 
 config BOARD_PC7302
