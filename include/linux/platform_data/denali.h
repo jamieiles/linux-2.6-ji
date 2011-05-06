@@ -14,9 +14,13 @@
 #ifndef __DENALI_PDATA_H__
 #define __DENALI_PDATA_H__
 
+struct mtd_partition;
+
 struct denali_nand_pdata {
-	int	nr_ecc_bits;
-	bool	have_hw_ecc_fixup;
+	int				nr_ecc_bits;
+	bool				have_hw_ecc_fixup;
+	const struct mtd_partition	*parts;
+	unsigned int			nr_parts;
 };
 
 #endif /* __DENALI_PDATA_H__ */

@@ -25,6 +25,7 @@
 #include <linux/slab.h>
 #include <linux/pci.h>
 #include <linux/mtd/mtd.h>
+#include <linux/mtd/partitions.h>
 #include <linux/module.h>
 #include <linux/platform_data/denali.h>
 
@@ -1658,7 +1659,12 @@ static int denali_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
 		goto failed_req_irq;
 	}
 
-	ret = mtd_device_register(&denali->mtd, NULL, 0);
+	if (pdata && pdata->parts)
+		ret = mtd_device_register(&denali->mtd, pdata->parts,
+					 pdata->nr_parts);
+	else
+		ret = mtd_device_register(&denali->mtd, NULL, 0);
+
 	if (ret) {
 		dev_err(&dev->dev, "Spectra: Failed to register MTD: %d\n",
 				ret);
