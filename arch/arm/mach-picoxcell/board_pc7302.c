@@ -172,9 +172,20 @@ static struct platform_device pc7302_nand = {
 static void pc7302_init_nand(void)
 {
 	struct clk *ebi_clk = clk_get(NULL, "ebi");
+	int err;
+	const struct mux_cfg pc3x2_cfg[] = {
+		MUXCFG("arm4", MUX_ARM),
+	};
+	const struct mux_cfg pc3x3_cfg[] = {
+		MUXCFG("pai_tx_data0", MUX_PERIPHERAL_PAI),
+		MUXCFG("ebi_addr22", MUX_ARM),
+	};
 
-	if (mux_configure_one(picoxcell_is_pc3x3() ? "ebi_addr22" : "arm4",
-			      MUX_ARM)) {
+	if (picoxcell_is_pc3x3())
+		err = mux_configure_table(pc3x3_cfg, ARRAY_SIZE(pc3x3_cfg));
+	else
+		err = mux_configure_table(pc3x2_cfg, ARRAY_SIZE(pc3x2_cfg));
+	if (err) {
 		pr_err("unable to set ebi_addr22 for use as gpio-nand cle\n");
 		return;
 	}
