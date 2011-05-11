@@ -122,17 +122,17 @@ static struct mtd_partition pc7302_nand_parts[] = {
 	{
 		.name	= "Boot",
 		.size	= 4 * SZ_128K,
-		.offset	= 0,
+		.offset	= 8 * SZ_128K,
 	},
 	{
 		.name	= "Redundant Boot",
 		.size	= 4 * SZ_128K,
-		.offset	= MTDPART_OFS_APPEND,
+		.offset	= 16 * SZ_128K,
 	},
 	{
 		.name	= "Boot Environment",
 		.size	= SZ_128K,
-		.offset	= MTDPART_OFS_APPEND,
+		.offset	= 24 * SZ_128K,
 	},
 	{
 		.name	= "Redundant Boot Environment",
@@ -142,7 +142,7 @@ static struct mtd_partition pc7302_nand_parts[] = {
 	{
 		.name	= "Kernel",
 		.size	= 8 * SZ_1M,
-		.offset	= (12 * SZ_128K),
+		.offset	= (28 * SZ_128K),
 	},
 	{
 		.name	= "File System",
