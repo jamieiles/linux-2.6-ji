@@ -52,6 +52,16 @@ config BOARD_PC7302
 	  can take any of the PC3X2 or PC3X3 devices and includes SPI NOR
 	  flash, parallel NOR flash and NAND flash.
 
+config BOARD_PC7308
+	bool "Support PC7308 Board"
+	default y
+	depends on PICOXCELL_PC30XX
+	select PICOXCELL_HAVE_TSU
+	help
+	  Include support for the Picochip PC7308 platform.  This platform
+	  takes the PC3008 device and includes NAND flash, SPI flash, 10/100
+	  Ethernet and a number of other femtocell peripherals.
+
 config PICOXCELL_HAVE_TSU
 	bool
 
