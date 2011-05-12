@@ -51,6 +51,15 @@ config SGI_MBCS
 
 source "drivers/tty/serial/Kconfig"
 
+config PACKETMANAGER
+	tristate "picoArray Layer2 HSDPA ciphering/DMA support"
+	depends on PICOIF && CRYPTO_DEV_PICOXCELL && ARCH_PICOXCELL
+	help
+	  Enable the packetmanager driver to do combined layer2 ciphering and
+	  picoArray DMA for HSDPA. This offloads the ciphering into the PC302
+	  crypto engines and then DMA's into the picoArray to save
+	  userspace/kernelspace copying and waking.
+
 config TTY_PRINTK
 	bool "TTY driver to output user messages via printk"
 	depends on EXPERT
