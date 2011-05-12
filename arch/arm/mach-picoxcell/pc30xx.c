@@ -358,6 +358,7 @@ static struct clk_lookup pc30xx_clk_lookup[] = {
 	CLK_LOOKUP("dw_apb_timer.1",	NULL,		&dummy_clk),
 	CLK_LOOKUP(NULL,		"uart",		&dummy_clk),
 	CLK_LOOKUP("denali-nand-mmio",	NULL,		&nand_clk),
+	CLK_LOOKUP("picoArray.0",	"axi2pico",	&axi2pico_clk),
 };
 
 static void __init pc30xx_clk_init(void)
