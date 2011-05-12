@@ -863,6 +863,15 @@ config CRYPTO_USER_API_SKCIPHER
 	  This option enables the user-spaces interface for symmetric
 	  key cipher algorithms.
 
+config KEYSTREAM
+        tristate "Configfs based keystream generator"
+        depends on CONFIGFS_FS
+        help
+          This option enables the keystream generator that provides a configfs
+          based API to use block ciphers to generate a keystream that can be
+          read into userspace applications and XOR'd with plaintext/ciphertext
+          to perform encryption/decryption in a stream cipher mode.
+
 source "drivers/crypto/Kconfig"
 
 endif	# if CRYPTO
