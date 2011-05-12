@@ -46,6 +46,7 @@ config BOARD_PC7302
 	bool "Support PC7302 Board"
 	default y
 	select PICOXCELL_HAVE_TSU
+	depends on PICOXCELL_PC3X2 || PICOXCELL_PC3X3
 	help
           Include support for the picoChip PC7302 platform. This platform is
 	  can take any of the PC3X2 or PC3X3 devices and includes SPI NOR
