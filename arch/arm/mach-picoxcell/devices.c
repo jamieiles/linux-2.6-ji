@@ -13,6 +13,7 @@
 #include <linux/init.h>
 #include <linux/interrupt.h>
 #include <linux/io.h>
+#include <linux/picochip/picoif.h>
 #include <mach/hardware.h>
 #include <mach/irqs.h>
 
@@ -49,6 +50,7 @@ static struct resource dmac0_resources[] = {
 
 static struct dw_dma_platform_data dmac0_pdata = {
 	.nr_channels		= 8,
+	.is_private		= true,
 };
 
 static u64 dmac0_dmamask = DMA_BIT_MASK(32);
@@ -80,7 +82,7 @@ static struct resource dmac1_resources[] = {
 
 static struct dw_dma_platform_data dmac1_pdata = {
 	.nr_channels		= 8,
-	.is_private		= 1,
+	.is_private		= true,
 };
 
 static u64 dmac1_dmamask = DMA_BIT_MASK(32);
@@ -97,10 +99,57 @@ static struct platform_device dmac1_device = {
 	},
 };
 
+static struct resource pa0_resources[] = {
+	{
+		.start		= AXI2PICO_BUFFERS_BASE,
+		.end		= AXI2PICO_BUFFERS_BASE +
+				  AXI2PICO_BUFFERS_SIZE - 1,
+		.flags		= IORESOURCE_MEM,
+		.name		= "ahb2pico_axi2pico",
+	},
+	{
+		.start		= PICOXCELL_AXI2CFG_BASE +
+				  AXI2CFG_PURGE_CFG_PORT_REG_OFFSET,
+		.end		= PICOXCELL_AXI2CFG_BASE +
+				  AXI2CFG_DEVICE_ID_REG_OFFSET - 1,
+		.flags		= IORESOURCE_MEM,
+		.name		= "procif",
+	},
+	{
+		.start		= PICOXCELL_AXI2CFG_BASE +
+				  AXI2CFG_CONFIG_WRITE_REG_OFFSET,
+		.end		= PICOXCELL_AXI2CFG_BASE +
+				  AXI2CFG_DMAC1_CONFIG_REG_OFFSET - 1,
+		.flags		= IORESOURCE_MEM,
+		.name		= "procif2",
+	},
+	{
+		.start		= IRQ_AXI2PICO8,
+		.end		= IRQ_AXI2PICO8,
+		.flags		= IORESOURCE_IRQ,
+		.name		= "gpr_irq",
+	},
+};
+
+static struct pc3xx_pdata pa0_pdata = {
+	.axi2pico_dmac		= &dmac0_device.dev,
+	.axi2cfg_dmac		= &dmac1_device.dev,
+};
+
+static struct platform_device pa0 = {
+	.name			= "picoArray",
+	.id			= 0,
+	.dev.coherent_dma_mask	= 0xffffffff,
+	.resource		= pa0_resources,
+	.num_resources		= ARRAY_SIZE(pa0_resources),
+	.dev.platform_data	= &pa0_pdata,
+};
+
 static struct platform_device *common_devices[] __initdata = {
 	&pmu_device,
 	&dmac0_device,
 	&dmac1_device,
+	&pa0,
 };
 
 static int __init picoxcell_add_devices(void)
