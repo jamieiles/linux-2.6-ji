@@ -1,5 +1,14 @@
 if ARCH_PICOXCELL
 
+config PICOXCELL_TIMER_HZ
+	int "Kernel HZ (jiffies per second)"
+	range 100 1000
+	default 1000
+	help
+	  Select the kernel tick rate here.  Higher numbers mean more timer
+	  interrupts per second when ticks are required but may give lower
+	  latencies.
+
 comment "Picochip SoC device support"
 
 config PICOXCELL_PC3X2
