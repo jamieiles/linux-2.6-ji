@@ -445,7 +445,7 @@ static void pc30xx_init_bus_snoopers(void)
 
 static void pc30xx_add_spaccs(void)
 {
-	picoxcell_add_spacc("picoxcell-ipsec-v2", PICOXCELL_IPSEC_BASE,
+	picoxcell_add_spacc("picoxcell-ipsec-v2", PC30XX_IPSEC_BASE,
 			    IRQ_IPSEC, -1);
 	picoxcell_add_spacc("picoxcell-l2-v2", PICOXCELL_CIPHER_BASE,
 			    IRQ_AES, -1);
