@@ -512,7 +512,6 @@ static int shrink_ecclayout(const struct nand_ecclayout *from,
 	return 0;
 }
 
-#ifdef CONFIG_MTD_PARTITIONS
 static int mtd_blkpg_ioctl(struct mtd_info *mtd,
 			   struct blkpg_ioctl_arg __user *arg)
 {
@@ -548,8 +547,6 @@ static int mtd_blkpg_ioctl(struct mtd_info *mtd,
 		return -EINVAL;
 	}
 }
-#endif
-
 
 static int mtd_ioctl(struct file *file, u_int cmd, u_long arg)
 {
@@ -941,7 +938,6 @@ static int mtd_ioctl(struct file *file, u_int cmd, u_long arg)
 		break;
 	}
 
-#ifdef CONFIG_MTD_PARTITIONS
 	case BLKPG:
 	{
 		ret = mtd_blkpg_ioctl(mtd,
@@ -955,7 +951,6 @@ static int mtd_ioctl(struct file *file, u_int cmd, u_long arg)
 		ret = 0;
 		break;
 	}
-#endif
 
 	default:
 		ret = -ENOTTY;
