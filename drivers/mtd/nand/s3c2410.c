@@ -715,7 +715,6 @@ static int s3c24xx_nand_remove(struct platform_device *pdev)
 	return 0;
 }
 
-#ifdef CONFIG_MTD_PARTITIONS
 const char *part_probes[] = { "cmdlinepart", NULL };
 static int s3c2410_nand_add_partition(struct s3c2410_nand_info *info,
 				      struct s3c2410_nand_mtd *mtd,
@@ -725,7 +724,7 @@ static int s3c2410_nand_add_partition(struct s3c2410_nand_info *info,
 	int nr_part = 0;
 
 	if (set == NULL)
-		return add_mtd_device(&mtd->mtd);
+		return mtd_device_register(&mtd->mtd, NULL, 0);
 
 	mtd->mtd.name = set->name;
 	nr_part = parse_mtd_partitions(&mtd->mtd, part_probes, &part_info, 0);
@@ -735,19 +734,8 @@ static int s3c2410_nand_add_partition(struct s3c2410_nand_info *info,
 		part_info = set->partitions;
 	}
 
-	if (nr_part > 0 && part_info)
-		return add_mtd_partitions(&mtd->mtd, part_info, nr_part);
-
-	return add_mtd_device(&mtd->mtd);
+	return mtd_device_register(&mtd->mtd, part_info, nr_part);
 }
-#else
-static int s3c2410_nand_add_partition(struct s3c2410_nand_info *info,
-				      struct s3c2410_nand_mtd *mtd,
-				      struct s3c2410_nand_set *set)
-{
-	return add_mtd_device(&mtd->mtd);
-}
-#endif
 
 /**
  * s3c2410_nand_init_chip - initialise a single instance of an chip
