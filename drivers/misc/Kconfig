@@ -392,6 +392,14 @@ config EP93XX_PWM
 	  To compile this driver as a module, choose M here: the module will
 	  be called ep93xx_pwm.
 
+config PICOGPIO
+        tristate "Userspace GPIO interface"
+        ---help---
+          This option enables the picogpio userspace interface. This is a
+	  simple driver that provides an ioctl interface to the kernel GPIO
+	  API and picoChip PC3XX analogue SD-GPIO interface. Saying 'm' here
+	  will build a module called picogpio.
+
 config DS1682
 	tristate "Dallas DS1682 Total Elapsed Time Recorder with Alarm"
 	depends on I2C && EXPERIMENTAL
