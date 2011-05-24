@@ -46,3 +46,4 @@ obj-$(CONFIG_AB8500_PWM)	+= ab8500-pwm.o
 obj-y				+= lis3lv02d/
 obj-$(CONFIG_PICOXCELL_FUSE)	+= picoxcell_fuse.o
 obj-$(CONFIG_PICOGPIO)		+= picogpio.o
+obj-$(CONFIG_PC3XX_FRACN)	+= pc3xxfracn.o

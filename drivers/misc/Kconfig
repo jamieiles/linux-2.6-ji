@@ -400,6 +400,13 @@ config PICOGPIO
 	  API and picoChip PC3XX analogue SD-GPIO interface. Saying 'm' here
 	  will build a module called picogpio.
 
+config PC3XX_FRACN
+        tristate "Frac-N Synth driver for picoChip PC3XX"
+        depends on ARCH_PICOXCELL
+        default n
+        help
+          This driver enables a driver for the PC3XX Frac-N synth.
+
 config DS1682
 	tristate "Dallas DS1682 Total Elapsed Time Recorder with Alarm"
 	depends on I2C && EXPERIMENTAL
