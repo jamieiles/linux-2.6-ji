@@ -227,6 +227,9 @@ static int __devinit gpio_nand_probe(struct platform_device *dev)
 	struct nand_chip *this;
 	struct resource *res0, *res1;
 	int ret;
+	struct mtd_partition *partitions = NULL;
+	int num_part = 0;
+	const char *part_probes[] = { "cmdlinepart", NULL };
 
 	if (!dev->dev.platform_data)
 		return -EINVAL;
@@ -316,8 +319,16 @@ static int __devinit gpio_nand_probe(struct platform_device *dev)
 		gpiomtd->plat.adjust_parts(&gpiomtd->plat,
 					   gpiomtd->mtd_info.size);
 
-	mtd_device_register(&gpiomtd->mtd_info, gpiomtd->plat.parts,
-			    gpiomtd->plat.num_parts);
+	gpiomtd->mtd_info.name = "gpio-nand";
+	num_part = parse_mtd_partitions(&gpiomtd->mtd_info, part_probes,
+					&partitions, 0);
+
+	if (partitions && num_part > 0)
+		mtd_device_register(&gpiomtd->mtd_info, partitions, num_part);
+	else
+		mtd_device_register(&gpiomtd->mtd_info, gpiomtd->plat.parts,
+				    gpiomtd->plat.num_parts);
+
 	platform_set_drvdata(dev, gpiomtd);
 
 	return 0;
