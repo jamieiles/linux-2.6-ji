@@ -77,6 +77,7 @@ void __clk_disable(struct clk *clk)
 			__clk_disable(clk->parent);
 		if (clk->ops && clk->ops->disable)
 			clk->ops->disable(clk);
+		clk->enable_count = 0;
 	}
 }
 
