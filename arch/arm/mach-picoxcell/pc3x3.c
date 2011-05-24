@@ -500,29 +500,13 @@ static void pc3x3_add_gpio(void)
 static unsigned int picoxcell_cpufreq_max_speed(void)
 {
 #define MAX_CLKF_FUSE	904
-#define MAX_CLKF_REG	IO_ADDRESS(PICOXCELL_FUSE_BASE + 904 / 8)
 	u8 max_clkf;
-	struct clk *fuse;
 
-	fuse = clk_get_sys("picoxcell-fuse", NULL);
-	if (IS_ERR(fuse)) {
-		pr_warn("no fuse clk, unable to get max cpu freq\n");
-		max_clkf = 0;
-		goto out;
+	if (picoxcell_fuse_read(MAX_CLKF_FUSE / 8, &max_clkf, 1)) {
+		pr_err("failed to read max clkf value\n");
+		return 0;
 	}
 
-	if (clk_enable(fuse)) {
-		pr_warn("unable to enable fuse clk, unable to get max cpu freq\n");
-		max_clkf = 0;
-		goto out_put;
-	}
-
-	max_clkf = readb(MAX_CLKF_REG);
-	clk_disable(fuse);
-
-out_put:
-	clk_put(fuse);
-out:
 	return max_clkf ? ((max_clkf + 1) * 5) * 1000 : 700000;
 }
 

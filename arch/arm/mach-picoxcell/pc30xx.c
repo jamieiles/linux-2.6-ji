@@ -661,29 +661,13 @@ static void pc30xx_add_fuse(void)
 static u8 pc30xx_temp_cal(void)
 {
 #define TEMP_CAL_FUSE	896
-#define TEMP_CAL_REG	IO_ADDRESS(PICOXCELL_FUSE_BASE + TEMP_CAL_FUSE / 8)
 	u8 temp_cal;
-	struct clk *fuse;
 
-	fuse = clk_get_sys("picoxcell-fuse", NULL);
-	if (IS_ERR(fuse)) {
-		pr_warn("no fuse clk, unable to get temperature calibration data\n");
-		temp_cal = 0;
-		goto out;
+	if (picoxcell_fuse_read(TEMP_CAL_FUSE / 8, &temp_cal, 1)) {
+		pr_err("failed to read temperature calibration offset\n");
+		return 0;
 	}
 
-	if (clk_enable(fuse)) {
-		pr_warn("unable to enable fuse clk, unable to get temperature calibration data\n");
-		temp_cal = 0;
-		goto out_put;
-	}
-
-	temp_cal = readb(TEMP_CAL_REG);
-	clk_disable(fuse);
-
-out_put:
-	clk_put(fuse);
-out:
 	return temp_cal;
 }
 
