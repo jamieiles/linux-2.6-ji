@@ -165,12 +165,26 @@ static struct platform_device spi_device = {
 	.num_resources		= ARRAY_SIZE(spi_resources),
 };
 
+static struct resource wdt_resource = {
+	.start		= PICOXCELL_WDOG_BASE,
+	.end		= PICOXCELL_WDOG_BASE + 0xFFFF,
+	.flags		= IORESOURCE_MEM,
+};
+
+static struct platform_device wdt_device = {
+	.name			= "dw_wdt",
+	.id			= -1,
+	.resource		= &wdt_resource,
+	.num_resources		= 1,
+};
+
 static struct platform_device *common_devices[] __initdata = {
 	&pmu_device,
 	&dmac0_device,
 	&dmac1_device,
 	&pa0,
 	&spi_device,
+	&wdt_device,
 };
 
 static int __init picoxcell_add_devices(void)
