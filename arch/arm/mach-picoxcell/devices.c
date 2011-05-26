@@ -145,11 +145,32 @@ static struct platform_device pa0 = {
 	.dev.platform_data	= &pa0_pdata,
 };
 
+static struct resource spi_resources[] = {
+	{
+		.start		= PICOXCELL_SSI_BASE,
+		.end		= PICOXCELL_SSI_BASE + 0xFFFF,
+		.flags		= IORESOURCE_MEM,
+	},
+	{
+		.start		= IRQ_SSI,
+		.end		= IRQ_SSI,
+		.flags		= IORESOURCE_IRQ,
+	},
+};
+
+static struct platform_device spi_device = {
+	.name			= "picoxcell-spi",
+	.id			= 0,
+	.resource		= spi_resources,
+	.num_resources		= ARRAY_SIZE(spi_resources),
+};
+
 static struct platform_device *common_devices[] __initdata = {
 	&pmu_device,
 	&dmac0_device,
 	&dmac1_device,
 	&pa0,
+	&spi_device,
 };
 
 static int __init picoxcell_add_devices(void)
