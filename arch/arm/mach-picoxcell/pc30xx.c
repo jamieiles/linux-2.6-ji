@@ -341,7 +341,7 @@ static struct clk *pc30xx_clks[] = {
 
 static struct clk_lookup pc30xx_clk_lookup[] = {
 	CLK_LOOKUP(NULL,		"tzprot_ctl",	&tzprot_clk),
-	CLK_LOOKUP("dw_spi_mmio.0",	NULL,		&spi_clk),
+	CLK_LOOKUP("picoxcell-spi.0",	NULL,		&spi_clk),
 	CLK_LOOKUP("dw_dmac.0",		NULL,		&dmac0_clk),
 	CLK_LOOKUP("dw_dmac.1",		NULL,		&dmac1_clk),
 	CLK_LOOKUP(NULL,		"ebi",		&ebi_clk),

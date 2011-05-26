@@ -28,7 +28,7 @@ FIXED_CLK(dummy,	CLOCK_TICK_RATE, -1, NULL);
 FIXED_CLK(ref,		20000000, -1, NULL);
 
 static struct clk_lookup pc3x2_clk_lookup[] = {
-	CLK_LOOKUP("dw_spi_mmio.0",	NULL,		&dummy_clk),
+	CLK_LOOKUP("picoxcell-spi.0",	NULL,		&dummy_clk),
 	CLK_LOOKUP("dw_dmac.0",		NULL,		&dummy_clk),
 	CLK_LOOKUP("dw_dmac.1",		NULL,		&dummy_clk),
 	CLK_LOOKUP(NULL,		"ebi",		&dummy_clk),
