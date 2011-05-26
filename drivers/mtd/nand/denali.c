@@ -1433,6 +1433,9 @@ static int denali_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
 	struct denali_nand_info *denali;
 	int ret;
 	struct denali_nand_pdata *pdata;
+	struct mtd_partition *partitions = NULL;
+	int nr_parts = 0;
+	const char *part_probes[] = { "cmdlinepart", NULL };
 
 	denali = kzalloc(sizeof(*denali), GFP_KERNEL);
 	if (!denali)
@@ -1659,7 +1662,11 @@ static int denali_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
 		goto failed_req_irq;
 	}
 
-	if (pdata && pdata->parts)
+	nr_parts = parse_mtd_partitions(&denali->mtd, part_probes,
+					&partitions, 0);
+	if (partitions && nr_parts > 0)
+		ret = mtd_device_register(&denali->mtd, partitions, nr_parts);
+	else if (pdata && pdata->parts)
 		ret = mtd_device_register(&denali->mtd, pdata->parts,
 					 pdata->nr_parts);
 	else
