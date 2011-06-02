@@ -35,6 +35,7 @@
 #include <linux/list.h>
 #include <linux/module.h>
 #include <linux/platform_device.h>
+#include <linux/pm_runtime.h>
 #include <linux/pm.h>
 #include <linux/rtnetlink.h>
 #include <linux/scatterlist.h>
@@ -801,6 +802,8 @@ static int spacc_aead_cra_init(struct crypto_tfm *tfm)
 
 	tfm->crt_aead.reqsize = sizeof(struct spacc_req);
 
+	pm_runtime_get_sync(engine->dev);
+
 	return 0;
 }
 
@@ -811,10 +814,13 @@ static int spacc_aead_cra_init(struct crypto_tfm *tfm)
 static void spacc_aead_cra_exit(struct crypto_tfm *tfm)
 {
 	struct spacc_aead_ctx *ctx = crypto_tfm_ctx(tfm);
+	struct spacc_engine *engine = ctx->generic.engine;
 
 	if (ctx->sw_cipher)
 		crypto_free_aead(ctx->sw_cipher);
 	ctx->sw_cipher = NULL;
+
+	pm_runtime_put_sync(engine->dev);
 }
 
 /*
@@ -1106,16 +1112,21 @@ static int spacc_ablk_cra_init(struct crypto_tfm *tfm)
 
 	tfm->crt_ablkcipher.reqsize = sizeof(struct spacc_req);
 
+	pm_runtime_get_sync(engine->dev);
+
 	return 0;
 }
 
 static void spacc_ablk_cra_exit(struct crypto_tfm *tfm)
 {
 	struct spacc_ablk_ctx *ctx = crypto_tfm_ctx(tfm);
+	struct spacc_engine *engine = ctx->generic.engine;
 
 	if (ctx->sw_cipher)
 		crypto_free_ablkcipher(ctx->sw_cipher);
 	ctx->sw_cipher = NULL;
+
+	pm_runtime_put_sync(engine->dev);
 }
 
 static int spacc_ablk_encrypt(struct ablkcipher_request *req)
@@ -1204,7 +1215,8 @@ static void spacc_packet_timeout(unsigned long data)
 {
 	struct spacc_engine *engine = (struct spacc_engine *)data;
 
-	spacc_process_done(engine);
+	if (!pm_runtime_suspended(engine->dev))
+		spacc_process_done(engine);
 }
 
 static int spacc_req_submit(struct spacc_req *req)
@@ -1239,13 +1251,15 @@ static void spacc_spacc_complete(unsigned long data)
 
 	engine->in_flight -= num_removed;
 
-	list_for_each_entry_safe(req, tmp, &engine->pending, list) {
-		if (spacc_fifo_cmd_full(engine))
-			break;
+	if (!pm_runtime_suspended(engine->dev)) {
+		list_for_each_entry_safe(req, tmp, &engine->pending, list) {
+			if (spacc_fifo_cmd_full(engine))
+				break;
 
-		list_move_tail(&req->list, &engine->in_progress);
-		++engine->in_flight;
-		req->result = spacc_req_submit(req);
+			list_move_tail(&req->list, &engine->in_progress);
+			++engine->in_flight;
+			req->result = spacc_req_submit(req);
+		}
 	}
 
 	if (engine->in_flight)
@@ -1254,7 +1268,6 @@ static void spacc_spacc_complete(unsigned long data)
 	spin_unlock_irqrestore(&engine->hw_lock, flags);
 }
 
-#ifdef CONFIG_PM
 static int spacc_suspend(struct device *dev)
 {
 	struct platform_device *pdev = to_platform_device(dev);
@@ -1279,10 +1292,11 @@ static int spacc_resume(struct device *dev)
 }
 
 static const struct dev_pm_ops spacc_pm_ops = {
-	.suspend	= spacc_suspend,
-	.resume		= spacc_resume,
+	.suspend		= spacc_suspend,
+	.resume			= spacc_resume,
+	.runtime_suspend	= spacc_suspend,
+	.runtime_resume		= spacc_resume,
 };
-#endif /* CONFIG_PM */
 
 static inline struct spacc_engine *spacc_dev_to_engine(struct device *dev)
 {
@@ -1810,11 +1824,10 @@ static int __devinit spacc_probe(struct platform_device *pdev)
 		return PTR_ERR(engine->clk);
 	}
 
-	if (clk_enable(engine->clk)) {
-		dev_info(&pdev->dev, "unable to enable clk\n");
-		clk_put(engine->clk);
-		return -EIO;
-	}
+	platform_set_drvdata(pdev, engine);
+	pm_runtime_irq_safe(&pdev->dev);
+	pm_runtime_enable(&pdev->dev);
+	pm_runtime_resume(&pdev->dev);
 
 	err = device_create_file(&pdev->dev, &dev_attr_stat_irq_thresh);
 	if (err) {
@@ -1822,7 +1835,6 @@ static int __devinit spacc_probe(struct platform_device *pdev)
 		clk_put(engine->clk);
 		return err;
 	}
-
 
 	/*
 	 * Use an IRQ threshold of 50% as a default. This seems to be a
@@ -1850,8 +1862,6 @@ static int __devinit spacc_probe(struct platform_device *pdev)
 	engine->in_flight = 0;
 	tasklet_init(&engine->complete, spacc_spacc_complete,
 		     (unsigned long)engine);
-
-	platform_set_drvdata(pdev, engine);
 
 	INIT_LIST_HEAD(&engine->registered_algs);
 	for (i = 0; i < engine->num_algs; ++i) {
@@ -1886,7 +1896,6 @@ static int __devexit spacc_remove(struct platform_device *pdev)
 		crypto_unregister_alg(&alg->alg);
 	}
 
-	clk_disable(engine->clk);
 	clk_put(engine->clk);
 
 	return 0;
@@ -1905,9 +1914,7 @@ static struct platform_driver spacc_driver = {
 	.remove		= __devexit_p(spacc_remove),
 	.driver		= {
 		.name	= "picoxcell-ipsec",
-#ifdef CONFIG_PM
 		.pm	= &spacc_pm_ops,
-#endif /* CONFIG_PM */
 	},
 	.id_table	= spacc_id_table,
 };
