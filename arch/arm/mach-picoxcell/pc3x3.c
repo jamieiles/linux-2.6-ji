@@ -60,7 +60,6 @@ FIXED_CLK(l2_engine,	CLOCK_TICK_RATE, 6, &pc3x3_fixed_clk_ops);
 FIXED_CLK(trng,		CLOCK_TICK_RATE, 7, &pc3x3_fixed_clk_ops);
 FIXED_CLK(fuse,		CLOCK_TICK_RATE, 8, &pc3x3_fixed_clk_ops);
 FIXED_CLK(otp,		CLOCK_TICK_RATE, 9, &pc3x3_fixed_clk_ops);
-FIXED_CLK(wdt,		CLOCK_TICK_RATE, -1, &pc3x3_fixed_clk_ops);
 FIXED_CLK(dummy,	CLOCK_TICK_RATE, -1, &pc3x3_fixed_clk_ops);
 FIXED_CLK(ref,		20000000, -1, NULL);
 VARIABLE_CLK(arm,			 -1, 140000000, 700000000, 5000000, &pc3x3_variable_clk_ops);
@@ -245,7 +244,6 @@ static struct clk *pc3x3_clks[] = {
 	&trng_clk,
 	&fuse_clk,
 	&otp_clk,
-	&wdt_clk,
 	&arm_clk,
 };
 
@@ -260,7 +258,7 @@ static struct clk_lookup pc3x3_clk_lookup[] = {
 	CLK_LOOKUP("picoxcell-trng",	NULL,		&trng_clk),
 	CLK_LOOKUP("picoxcell-fuse",	NULL,		&fuse_clk),
 	CLK_LOOKUP("picoxcell-otp-pc3x3", NULL,		&otp_clk),
-	CLK_LOOKUP("dw_wdt",		NULL,		&wdt_clk),
+	CLK_LOOKUP("dw_wdt",		NULL,		&dummy_clk),
 	CLK_LOOKUP(NULL,		"arm",		&arm_clk),
 	CLK_LOOKUP("macb",		"pclk",		&dummy_clk),
 	CLK_LOOKUP("macb",		"hclk",		&dummy_clk),
