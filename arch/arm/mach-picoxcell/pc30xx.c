@@ -176,10 +176,27 @@ static unsigned long pll_calc_params(unsigned long target,
 	return rate;
 }
 
+static long pc30xx_pll_round_freq(long freq)
+{
+	long error;
+
+	/*
+	 * Round to the nearest MHz to account for small error in the PLL.  We
+	 * don't set any PLL's to a sub 1MHz division.
+	 */
+	error = freq % 1000000;
+	if (error < 500000)
+		return freq - error;
+	else
+		return freq + 1000000 - error;
+}
+
 static long pc30xx_pll_round_rate(struct clk *clk, unsigned long rate)
 {
-	return (long)pll_calc_params(rate, clk_get_rate(clk->parent),
-				     NULL, NULL);
+	long freq = (long)pll_calc_params(rate, clk_get_rate(clk->parent),
+					  NULL, NULL);
+
+	return pc30xx_pll_round_freq(freq);
 }
 
 static int pc30xx_pll_set_rate(struct clk *clk, unsigned long target)
@@ -234,7 +251,7 @@ static int pc30xx_pll_get_rate(struct clk *clk)
 	rate64 = (u64)rate * parent_rate;
 	do_div(rate64, 20000000LLU);
 
-	return (int)rate64;
+	return (int)pc30xx_pll_round_freq((long)rate64);
 }
 
 /*
