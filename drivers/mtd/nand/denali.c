@@ -26,6 +26,7 @@
 #include <linux/pci.h>
 #include <linux/mtd/mtd.h>
 #include <linux/module.h>
+#include <linux/platform_data/denali.h>
 
 #include "denali.h"
 
@@ -59,8 +60,6 @@ MODULE_PARM_DESC(onfi_timing_mode, "Overrides default ONFI setting."
 /* indicates whether or not the internal value for the flash bank is
  * valid or not */
 #define CHIP_SELECT_INVALID	-1
-
-#define SUPPORT_8BITECC		1
 
 /* This macro divides two integers and rounds fractional values up
  * to the nearest integer value. */
@@ -358,11 +357,8 @@ static void get_toshiba_nand_para(struct denali_nand_info *denali)
 			ioread32(denali->flash_reg + DEVICE_SPARE_AREA_SIZE);
 		iowrite32(tmp,
 				denali->flash_reg + LOGICAL_PAGE_SPARE_SIZE);
-#if SUPPORT_15BITECC
-		iowrite32(15, denali->flash_reg + ECC_CORRECTION);
-#elif SUPPORT_8BITECC
-		iowrite32(8, denali->flash_reg + ECC_CORRECTION);
-#endif
+		iowrite32(denali->nr_ecc_bits,
+			  denali->flash_reg + ECC_CORRECTION);
 	}
 }
 
@@ -386,11 +382,8 @@ static void get_hynix_nand_para(struct denali_nand_info *denali,
 		iowrite32(spare_size,
 				denali->flash_reg + LOGICAL_PAGE_SPARE_SIZE);
 		iowrite32(0, denali->flash_reg + DEVICE_WIDTH);
-#if SUPPORT_15BITECC
-		iowrite32(15, denali->flash_reg + ECC_CORRECTION);
-#elif SUPPORT_8BITECC
-		iowrite32(8, denali->flash_reg + ECC_CORRECTION);
-#endif
+		iowrite32(denali->nr_ecc_bits,
+			  denali->flash_reg + ECC_CORRECTION);
 		break;
 	default:
 		dev_warn(denali->dev,
@@ -1427,10 +1420,20 @@ static int denali_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
 	resource_size_t csr_base, mem_base;
 	unsigned long csr_len, mem_len;
 	struct denali_nand_info *denali;
+	int ret;
+	struct denali_nand_pdata *pdata;
 
 	denali = kzalloc(sizeof(*denali), GFP_KERNEL);
 	if (!denali)
 		return -ENOMEM;
+
+	denali->dev = &dev->dev;
+
+	pdata = dev_get_platdata(denali->dev);
+	if (pdata && pdata->nr_ecc_bits > 8)
+		denali->nr_ecc_bits = pdata->nr_ecc_bits;
+	else
+		denali->nr_ecc_bits = 8;
 
 	ret = pci_enable_device(dev);
 	if (ret) {
@@ -1481,7 +1484,6 @@ static int denali_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
 	}
 
 	pci_set_master(dev);
-	denali->dev = &dev->dev;
 	denali->mtd.dev.parent = &dev->dev;
 
 	ret = pci_request_regions(dev, DENALI_NAND_NAME);

@@ -494,6 +494,7 @@ struct denali_nand_info {
 	uint32_t blksperchip;
 	uint32_t bbtskipbytes;
 	uint32_t max_banks;
+	int nr_ecc_bits;
 };
 
 #endif /*_LLD_NAND_*/
