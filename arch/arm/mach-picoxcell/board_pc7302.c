@@ -113,10 +113,17 @@ static void pc7302_init_nor(void)
 	platform_device_register(&pc7302_nor);
 }
 
-static struct resource pc7302_nand_resource = {
-	.start = EBI_CS2_BASE,
-	.end   = EBI_CS2_BASE + 2 * SZ_1K,
-	.flags = IORESOURCE_MEM,
+static struct resource pc7302_nand_resource[] = {
+	{
+		.start = EBI_CS2_BASE,
+		.end   = EBI_CS2_BASE + 2 * SZ_1K,
+		.flags = IORESOURCE_MEM,
+	},
+	{
+		.start = PICOXCELL_GPIO_BASE + 0x08,
+		.end   = PICOXCELL_GPIO_BASE + 0x08 + 3,
+		.flags = IORESOURCE_MEM,
+	}
 };
 
 static struct mtd_partition pc7302_nand_parts[] = {
@@ -164,8 +171,8 @@ static struct gpio_nand_platdata pc7302_nand_platdata = {
 
 static struct platform_device pc7302_nand = {
 	.name		    = "gpio-nand",
-	.num_resources	    = 1,
-	.resource	    = &pc7302_nand_resource,
+	.num_resources	    = ARRAY_SIZE(pc7302_nand_resource),
+	.resource	    = pc7302_nand_resource,
 	.id		    = -1,
 	.dev.platform_data  = &pc7302_nand_platdata,
 };
