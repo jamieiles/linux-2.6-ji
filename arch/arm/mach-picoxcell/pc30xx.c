@@ -866,6 +866,25 @@ static struct mux_def pc30xx_labs_mux[] __used = {
 	MUXGPIOFUNC_RO(mii_crs,		45,	-1,	MII,	mii_get_mux),
 	MUXGPIOFUNC_RO(mii_tx_clk,	46,	-1,	MII,	mii_get_mux),
 
+	/*	   Name			Periph	PeriphB	Reg	Bit */
+	MUX2PERIPH(pad_ebi_decode0,	EBI,	NAND,	0x60,	0),
+	MUX2PERIPH(pad_ebi_decode1,	EBI,	NAND,	0x60,	0),
+	MUX2PERIPH(pad_ebi_decode2,	EBI,	NAND,	0x60,	0),
+	MUX2PERIPH(pad_ebi_decode3,	EBI,	NAND,	0x60,	0),
+	MUX2PERIPH(pad_ebi_web,		EBI,	NAND,	0x60,	0),
+	MUX2PERIPH(pad_ebi_oeb,		EBI,	NAND,	0x60,	0),
+	MUX2PERIPH(pad_ebi_addr24,	EBI,	NAND,	0x60,	0),
+	MUX2PERIPH(pad_ebi_addr25,	EBI,	NAND,	0x60,	0),
+	MUX2PERIPH(pad_ebi_addr26,	EBI,	NAND,	0x60,	0),
+	MUX2PERIPH(pad_ebi_data0,	EBI,	NAND,	0x60,	0),
+	MUX2PERIPH(pad_ebi_data1,	EBI,	NAND,	0x60,	0),
+	MUX2PERIPH(pad_ebi_data2,	EBI,	NAND,	0x60,	0),
+	MUX2PERIPH(pad_ebi_data3,	EBI,	NAND,	0x60,	0),
+	MUX2PERIPH(pad_ebi_data4,	EBI,	NAND,	0x60,	0),
+	MUX2PERIPH(pad_ebi_data5,	EBI,	NAND,	0x60,	0),
+	MUX2PERIPH(pad_ebi_data6,	EBI,	NAND,	0x60,	0),
+	MUX2PERIPH(pad_ebi_data7,	EBI,	NAND,	0x60,	0),
+
 	/*	    Name,	ARM,	SD,	PERIPH,	get,	set */
 	MUXGPIOFUNC(decode2,	27,	-1,	EBI,	pc30xx_decode_get,	pc30xx_decode_set),
 	MUXGPIOFUNC(decode3,	28,	-1,	EBI,	pc30xx_decode_get,	pc30xx_decode_set),
