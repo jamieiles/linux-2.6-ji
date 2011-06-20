@@ -712,6 +712,69 @@ static void pc30xx_add_otp(void)
 	platform_device_register_simple("picoxcell-otp-pc30xx", -1, &res, 1);
 }
 
+static enum mux_setting pc30xx_decode_get(const struct mux_def *def)
+{
+	int decode = def->armgpio - PC30XX_GPIO_PIN_ARM_25;
+	unsigned long decode_mux;
+
+	if (axi2cfg_readl(AXI2CFG_USE_DECODE_GPIO_REG_OFFSET) & (1 << decode))
+		return MUX_ARM;
+
+	decode_mux = (axi2cfg_readl(AXI2CFG_DECODE_MUX_REG_OFFSET) >>
+		      (decode * 8)) & 0x3;
+
+	switch (decode_mux) {
+	case 0x0:
+		return MUX_PERIPHERAL_EBI;
+	case 0x1:
+		return MUX_PERIPHERAL_SSI;
+	case 0x2:
+		return MUX_PERIPHERAL_NAND;
+	case 0x3:
+	default:
+		return -EINVAL;
+	}
+}
+
+static int pc30xx_decode_set(const struct mux_def *def,
+			     enum mux_setting setting)
+{
+	int decode = def->armgpio - PC30XX_GPIO_PIN_ARM_25;
+	unsigned long decode_mux;
+	unsigned long use_decode_gpio;
+
+	decode_mux = axi2cfg_readl(AXI2CFG_DECODE_MUX_REG_OFFSET);
+	use_decode_gpio = axi2cfg_readl(AXI2CFG_USE_DECODE_GPIO_REG_OFFSET);
+
+	decode_mux &= ~(0x3 << (decode * 8));
+	use_decode_gpio &= ~(1 << decode);
+
+	switch (setting) {
+	case MUX_ARM:
+		use_decode_gpio |= (1 << decode);
+		break;
+
+	case MUX_PERIPHERAL_EBI:
+		break;
+
+	case MUX_PERIPHERAL_SSI:
+		decode_mux |= (0x1 << (decode * 8));
+		break;
+
+	case MUX_PERIPHERAL_NAND:
+		decode_mux |= (0x2 << (decode * 8));
+		break;
+
+	default:
+		return -EINVAL;
+	}
+
+	axi2cfg_writel(decode_mux, AXI2CFG_DECODE_MUX_REG_OFFSET);
+	axi2cfg_writel(use_decode_gpio, AXI2CFG_USE_DECODE_GPIO_REG_OFFSET);
+
+	return 0;
+}
+
 static struct mux_def pc30xx_hnb_mux[] = {
 	/*	Name		ARM	SD	PERIPH	REG	BIT	PERREG	PERBIT	FLAGS */
 	MUXGPIO(usim_clk,	0,	16,	USIM,	0x34,	0,	0xc0,	4,	MUX_INVERT_PERIPH),
@@ -737,8 +800,6 @@ static struct mux_def pc30xx_hnb_mux[] = {
 	MUXGPIO(ssi_data_out,	22,	6,	SSI,	0x34,	22,	0x44,	0,	0),
 	MUXGPIO(ssi_clk,	23,	7,	SSI,	0x34,	23,	0x44,	0,	0),
 	MUXGPIO(ssi_data_in,	24,	-1,	SSI,	-1,	-1,	0x44,	0,	0),
-	MUXGPIO(decode0,	25,	-1,	EBI,	-1,	-1,	0x40,	0,	0),
-	MUXGPIO(decode1,	26,	-1,	EBI,	-1,	-1,	0x40,	1,	0),
 	MUXGPIO(ebi_clk,	29,	-1,	EBI,	-1,	-1,	0x3c,	13,	0),
 	MUXGPIO(pai_tx_data0,	47,	-1,	PAI,	-1,	-1,	0x38,	0,	0),
 	MUXGPIO(pai_tx_data1,	48,	-1,	PAI,	-1,	-1,	0x38,	1,	0),
@@ -761,6 +822,10 @@ static struct mux_def pc30xx_hnb_mux[] = {
 	MUX2PERIPH(pad_pai_tx_clk,	PAI,	MAXIM,	0x4c,	0),
 	MUX2PERIPH(pad_pai_tx_ctrl,	PAI,	MAXIM,	0x4c,	0),
 	MUX2PERIPH(pad_pai_trig_clk,	PAI,	MAXIM,	0x4c,	0),
+
+	/*	    Name,	ARM,	SD,	PERIPH,	get,	set */
+	MUXGPIOFUNC(decode0,	25,	-1,	EBI,	pc30xx_decode_get,	pc30xx_decode_set),
+	MUXGPIOFUNC(decode1,	26,	-1,	EBI,	pc30xx_decode_get,	pc30xx_decode_set),
 };
 
 static enum mux_setting mii_get_mux(const struct mux_def *def)
@@ -781,8 +846,6 @@ static struct mux_def pc30xx_labs_mux[] __used = {
 	/*	Name		ARM	SD	PERIPH	REG	BIT	PERREG	PERBIT	FLAGS */
 	MUXGPIO(mii_mode0,	20,	4,	RSVD,	0x34,	20,	-1,	-1,	0),
 	MUXGPIO(mii_mode1,	21,	5,	RSVD,	0x34,	21,	-1,	-1,	0),
-	MUXGPIO(decode2,	27,	-1,	EBI,	-1,	-1,	0x40,	2,	0),
-	MUXGPIO(decode3,	28,	-1,	EBI,	-1,	-1,	0x40,	3,	0),
 	MUXGPIO(ebi_addr14,	30,	-1,	EBI,	-1,	-1,	0x3c,	0,	0),
 	MUXGPIO(ebi_addr15,	31,	-1,	EBI,	-1,	-1,	0x3c,	1,	0),
 	MUXGPIO(ebi_addr16,	32,	-1,	EBI,	-1,	-1,	0x3c,	2,	0),
@@ -802,6 +865,10 @@ static struct mux_def pc30xx_labs_mux[] __used = {
 	MUXGPIOFUNC_RO(mii_col,		44,	-1,	MII,	mii_get_mux),
 	MUXGPIOFUNC_RO(mii_crs,		45,	-1,	MII,	mii_get_mux),
 	MUXGPIOFUNC_RO(mii_tx_clk,	46,	-1,	MII,	mii_get_mux),
+
+	/*	    Name,	ARM,	SD,	PERIPH,	get,	set */
+	MUXGPIOFUNC(decode2,	27,	-1,	EBI,	pc30xx_decode_get,	pc30xx_decode_set),
+	MUXGPIOFUNC(decode3,	28,	-1,	EBI,	pc30xx_decode_get,	pc30xx_decode_set),
 };
 
 static void pc30xx_add_trng(void)
