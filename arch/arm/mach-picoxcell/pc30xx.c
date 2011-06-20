@@ -795,13 +795,13 @@ static struct mux_def pc30xx_labs_mux[] __used = {
 	MUXGPIO(ebi_addr23,	39,	-1,	EBI,	-1,	-1,	0x3c,	9,	0),
 
 	/*	    Name,		ARM,	SD,	PERIPH,	get */
-	MUXGPIOFUNC(mii_tx_data2,	40,	-1,	MII,	mii_get_mux),
-	MUXGPIOFUNC(mii_tx_data3,	41,	-1,	MII,	mii_get_mux),
-	MUXGPIOFUNC(mii_rx_data2,	42,	-1,	MII,	mii_get_mux),
-	MUXGPIOFUNC(mii_rx_data3,	43,	-1,	MII,	mii_get_mux),
-	MUXGPIOFUNC(mii_col,		44,	-1,	MII,	mii_get_mux),
-	MUXGPIOFUNC(mii_crs,		45,	-1,	MII,	mii_get_mux),
-	MUXGPIOFUNC(mii_tx_clk,		46,	-1,	MII,	mii_get_mux),
+	MUXGPIOFUNC_RO(mii_tx_data2,	40,	-1,	MII,	mii_get_mux),
+	MUXGPIOFUNC_RO(mii_tx_data3,	41,	-1,	MII,	mii_get_mux),
+	MUXGPIOFUNC_RO(mii_rx_data2,	42,	-1,	MII,	mii_get_mux),
+	MUXGPIOFUNC_RO(mii_rx_data3,	43,	-1,	MII,	mii_get_mux),
+	MUXGPIOFUNC_RO(mii_col,		44,	-1,	MII,	mii_get_mux),
+	MUXGPIOFUNC_RO(mii_crs,		45,	-1,	MII,	mii_get_mux),
+	MUXGPIOFUNC_RO(mii_tx_clk,	46,	-1,	MII,	mii_get_mux),
 };
 
 static void pc30xx_add_trng(void)

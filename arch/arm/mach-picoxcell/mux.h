@@ -61,6 +61,8 @@ struct mux_def {
 	unsigned		flags;
 	struct list_head	head;
 	enum mux_setting	(*get_setting)(const struct mux_def *def);
+	int			(*set_setting)(const struct mux_def *def,
+					       enum mux_setting setting);
 };
 
 struct mux_cfg {
@@ -115,15 +117,23 @@ extern int mux_configure_table(const struct mux_cfg *cfg,
 	.periph_b	= -1, \
 }
 
-#define MUXGPIOFUNC(__name, __arm, __sd, __periph, __get_func) { \
+#define __MUXGPIOFUNC(__name, __arm, __sd, __periph, __get_func, __set_func, \
+		      __flags) { \
 	.name		= #__name, \
 	.armgpio	= __arm, \
 	.sdgpio		= __sd, \
 	.periph		= MUX_PERIPHERAL_ ## __periph, \
 	.get_setting	= __get_func, \
+	.set_setting	= __set_func, \
 	.attr		= _SYSDEV_ATTR(__name, 0644, pin_show, pin_store), \
-	.flags		= MUX_RO, \
+	.flags		= __flags, \
 }
+
+#define MUXGPIOFUNC(__name, __arm, __sd, __periph, __get_func, __set_func) \
+	__MUXGPIOFUNC(__name, __arm, __sd, __periph, __get_func, __set_func, 0)
+
+#define MUXGPIOFUNC_RO(__name, __arm, __sd, __periph, __get_func) \
+	__MUXGPIOFUNC(__name, __arm, __sd, __periph, __get_func, NULL, MUX_RO)
 
 extern void picoxcell_mux_register(struct mux_def *defs, int nr_defs);
 

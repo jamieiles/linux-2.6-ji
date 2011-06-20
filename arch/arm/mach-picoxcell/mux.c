@@ -166,6 +166,9 @@ static int mux_configure(struct mux_def *def, enum mux_setting setting)
 	if (def->flags & MUX_RO)
 		return -EPERM;
 
+	if (def->set_setting)
+		return def->set_setting(def, setting);
+
 	if (def->flags & MUX_CONFIG_BUS)
 		return mux_set_config_bus(def, setting);
 
