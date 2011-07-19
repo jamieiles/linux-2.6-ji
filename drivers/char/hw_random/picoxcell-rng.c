@@ -142,6 +142,9 @@ static int picoxcell_trng_probe(struct platform_device *pdev)
 	pm_runtime_resume(&pdev->dev);
 
 	picoxcell_trng_start();
+
+	pm_runtime_suspend(&pdev->dev);
+
 	ret = hwrng_register(&picoxcell_trng);
 	if (ret)
 		goto err_register;
@@ -160,6 +163,7 @@ err_register:
 static int __devexit picoxcell_trng_remove(struct platform_device *pdev)
 {
 	hwrng_unregister(&picoxcell_trng);
+	pm_runtime_disable(&pdev->dev);
 	clk_put(rng_clk);
 
 	return 0;
