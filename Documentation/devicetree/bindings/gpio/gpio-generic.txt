@@ -1,0 +1,85 @@
+Generic MMIO GPIO controller
+
+This binding allows lots of common GPIO controllers to use a generic GPIO
+driver.  The top level GPIO node describes the registers for the controller
+and high level properties such as endianness and register width.  Each bank in
+the controller is represented as a child node.
+
+Required properties:
+- compatible : Must be one of:
+  - "snps,dw-apb-gpio" : Synopsys DesignWare APB GPIO controller
+- reg : The register window for the GPIO device.  If the device has multiple
+  banks then this window should cover all of the banks.
+- gpio-generic,reg-io-width : The width of the registers in the controller
+  (in bytes).
+- #address-cells : should be set to 1.
+- #size-cells : should be set to 0.  The addresses of the child nodes are the
+  bank numbers and the child nodes themselves represent the banks in the
+  controller.
+
+Optional properties:
+- gpio-generic,big-endian : the registers are in big-endian byte ordering.
+  If present then the first gpio in the controller occupies the MSB for
+  each register.
+
+Generic MMIO GPIO controller bank
+
+Required properties:
+- compatible : Must be one of:
+  - "snps,dw-apb-gpio-bank" : Synopsys DesignWare APB GPIO controller bank
+- gpio-controller : Marks the node as a GPIO controller.
+- #gpio-cells : Should be two.  The first cell is the pin number and the
+  second cell encodes optional flags (currently unused).
+- gpio-generic,nr-gpio : The number of GPIO pins in the bank.
+- regoffset-dat : The offset from the beginning of the controller for the
+  "dat" register for this bank.  This register is read to get the value of the
+  GPIO pins, and if there is no regoffset-set property then it is also used to
+  set the value of the pins.
+
+Optional properties:
+- regoffset-set : The offset from the beginning of the controller for the
+  "set" register for this bank.  If present then the GPIO values are set
+  through this register (writing a 1 bit sets the GPIO high).  If there is no
+  regoffset-clr property then writing a 0 bit to this register will set the
+  pin to a low value.
+- regoffset-clr : The offset from the beginning of the controller for the
+  "clr" register for this bank.  Writing a 1 bit to this register will set the
+  GPIO to a low output value.
+- regoffset-dirout : The offset from the beginning of the controller for the
+  "dirout" register for this bank.  Writing a 1 bit to this register sets the
+  pin to be an output pin, writing a zero sets the pin to be an input.
+- regoffset-dirin : The offset from the beginning of the controller for the
+  "dirin" register for this bank.  Writing a 1 bit to this register sets the
+  pin to be an input pin, writing a zero sets the pin to be an output.
+
+Examples:
+
+gpio: gpio@20000 {
+	compatible = "snps,dw-apb-gpio";
+	reg = <0x20000 0x1000>;
+	#address-cells = <1>;
+	#size-cells = <0>;
+	gpio-generic,reg-io-width = <4>;
+
+	banka: gpio-controller@0 {
+		compatible = "snps,dw-apb-gpio";
+		gpio-controller;
+		#gpio-cells = <2>;
+		gpio-generic,nr-gpio = <8>;
+
+		regoffset-dat = <0x50>;
+		regoffset-set = <0x00>;
+		regoffset-dirout = <0x04>;
+	};
+
+	bankb: gpio-controller@1 {
+		compatible = "snps,dw-apb-gpio";
+		gpio-controller;
+		#gpio-cells = <2>;
+		gpio-generic,nr-gpio = <16>;
+
+		regoffset-dat = <0x54>;
+		regoffset-set = <0x0c>;
+		regoffset-dirout = <0x10>;
+	};
+};
