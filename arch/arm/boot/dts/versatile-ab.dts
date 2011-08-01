@@ -19,6 +19,26 @@
 		reg = <0x0 0x08000000>;
 	};
 
+	clocks {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		ref24_clk: clock@0 {
+			compatible = "fixed-clock";
+			clock-frequency = <24000000>;
+			clock-outputs = "ref";
+		};
+
+		osc4_clk: clock@1 {
+			compatible = "ics,icst307";
+			ref = <24000>;
+			vco-max = <200000>;
+			vd-range = <12 519>;
+			rd-range = <3 129>;
+			clock-outputs = "osc4";
+		};
+	};
+
 	flash@34000000 {
 		compatible = "arm,versatile-flash";
 		reg = <0x34000000 0x4000000>;
@@ -80,18 +100,21 @@
 			compatible = "arm,pl011", "arm,primecell";
 			reg = <0x101f1000 0x1000>;
 			interrupts = <12>;
+			bus-clock = <&ref24_clk>, "ref";
 		};
 
 		uart1: uart@101f2000 {
 			compatible = "arm,pl011", "arm,primecell";
 			reg = <0x101f2000 0x1000>;
 			interrupts = <13>;
+			bus-clock = <&ref24_clk>, "ref";
 		};
 
 		uart2: uart@101f3000 {
 			compatible = "arm,pl011", "arm,primecell";
 			reg = <0x101f3000 0x1000>;
 			interrupts = <14>;
+			bus-clock = <&ref24_clk>, "ref";
 		};
 
 		smc@10100000 {
