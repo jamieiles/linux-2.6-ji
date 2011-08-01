@@ -37,3 +37,27 @@ Fixed clock required properties:
 Fixed clock optional properties:
     - ref-clock : The parent of the clock.  Must be in the form of <&phandle>,
       "output name".
+
+PC3X3 Gateable Clocks
+---------------------
+
+PC3X3 clock gate required properties:
+    - compatible = "picochip,pc3x3-clk-gate"
+    - #address-cells : must be equal to 1.
+    - #size-cells : must be equal to 0.
+    - reg : The register bank for the clock gate control.
+    - clock-outputs : Comma separated list of names of clock outputs.
+
+The individual clock outputs are represented as child nodes of the clock gate.
+
+PC3X3 gated clock required properties:
+    - compatible : "picochip,pc3x3-gated-clk".
+    - picochip,clk-disable-bit : The bit number in the clock gate control
+      register that must be set to disable the clock output.
+    - clock-frequency : The rate of the clock output in Hz.
+
+PC3X3 gated clock optional properties:
+    - ref-clock : The parent of the clock.  Must be in the form of <&phandle>,
+      "output name".
+    - picochip,clk-no-disable : Don't ever disable the clock.  This is required
+      for memory controllers etc that don't have a driver associated with them.

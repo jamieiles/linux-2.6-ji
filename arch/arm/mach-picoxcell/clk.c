@@ -11,6 +11,7 @@
 #include <linux/clk.h>
 #include <linux/delay.h>
 #include <linux/err.h>
+#include <linux/io.h>
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/of.h>
@@ -210,6 +211,92 @@ static void __init picoxcell_add_fixed_clk(struct device_node *np)
 	picoxcell_clk_add(&clk->clk);
 }
 
+struct gated_clk {
+	struct clk	clk;
+	unsigned int	disable_mask;
+	unsigned long	rate;
+	void __iomem	*reg;
+};
+
+static inline struct gated_clk *to_gated_clk(struct clk *clk)
+{
+	return container_of(clk, struct gated_clk, clk);
+}
+
+static unsigned long gated_clk_get_rate(struct clk *clk)
+{
+	struct gated_clk *gated = to_gated_clk(clk);
+
+	return gated->rate;
+}
+
+static void gated_clk_enable(struct clk *clk)
+{
+	struct gated_clk *gated = to_gated_clk(clk);
+	unsigned long gate;
+
+	gate = readl(gated->reg);
+	gate &= ~gated->disable_mask;
+	writel(gate, gated->reg);
+}
+
+static void gated_clk_disable(struct clk *clk)
+{
+	struct gated_clk *gated = to_gated_clk(clk);
+	unsigned long gate;
+
+	gate = readl(gated->reg);
+	gate |= gated->disable_mask;
+	writel(gate, gated->reg);
+}
+
+static const struct clk_ops gated_clk_ops = {
+	.get_rate	= gated_clk_get_rate,
+	.enable		= gated_clk_enable,
+	.disable	= gated_clk_disable,
+};
+
+static void __init picoxcell_add_pc3x3_gated_clk(struct device_node *gate)
+{
+	struct gated_clk *clk;
+	u32 rate, disable_bit;
+	struct device_node *np;
+	void __iomem *reg = of_iomap(gate, 0);
+
+	if (!reg) {
+		pr_err("unable to map regs for clk gate\n");
+		return;
+	}
+
+	for_each_child_of_node(gate, np) {
+		if (of_property_read_u32(np, "clock-frequency", &rate)) {
+			pr_err("no clock-frequency for %s\n", np->full_name);
+			continue;
+		}
+
+		if (of_property_read_u32(np, "picochip,clk-disable-bit",
+					 &disable_bit)) {
+			pr_err("no picochip,clk-disable-bit for %s\n",
+			       np->full_name);
+			continue;
+		}
+
+		clk = kzalloc(sizeof(*clk), GFP_KERNEL);
+		if (!clk)
+			panic("unable to allocate clk for %s\n",
+			      np->full_name);
+
+		clk->clk.ops = &gated_clk_ops;
+		clk->clk.name = np->name;
+		clk->clk.of_node = np;
+		clk->rate = rate;
+		clk->disable_mask = (1 << disable_bit);
+		clk->reg = reg;
+
+		picoxcell_clk_add(&clk->clk);
+	}
+}
+
 static struct clk *picoxcell_find_clk(struct device_node *np)
 {
 	struct clk *clk;
@@ -248,6 +335,10 @@ static const struct of_device_id picoxcell_clk_match[] = {
 	{
 		.compatible = "fixed-clock",
 		.data = picoxcell_add_fixed_clk,
+	},
+	{
+		.compatible = "picochip,pc3x3-clk-gate",
+		.data = picoxcell_add_pc3x3_gated_clk,
 	},
 	{ /* Sentinel */ }
 };
