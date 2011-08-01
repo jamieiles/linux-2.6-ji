@@ -1878,6 +1878,8 @@ static void wm8903_init_gpio(struct snd_soc_codec *codec, struct wm8903_platform
 	else
 		wm8903->gpio_chip.base = -1;
 
+	wm8903->gpio_chip.of_node = codec->dev->of_node;
+
 	ret = gpiochip_add(&wm8903->gpio_chip);
 	if (ret != 0)
 		dev_err(codec->dev, "Failed to add GPIOs: %d\n", ret);
