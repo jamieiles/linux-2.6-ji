@@ -36,6 +36,7 @@
 #include <linux/seq_file.h>
 #include <linux/slab.h>
 #include <linux/io.h>
+#include <linux/of_platform.h>
 #include <mach/iomap.h>
 #include <sound/core.h>
 #include <sound/pcm.h>
@@ -355,6 +356,7 @@ static __devinit int tegra_i2s_platform_probe(struct platform_device *pdev)
 {
 	struct tegra_i2s * i2s;
 	struct resource *mem, *memregion, *dmareq;
+	int dma_channel;
 	int ret;
 
 	if ((pdev->id < 0) ||
@@ -402,11 +404,20 @@ static __devinit int tegra_i2s_platform_probe(struct platform_device *pdev)
 		goto err_clk_put;
 	}
 
-	dmareq = platform_get_resource(pdev, IORESOURCE_DMA, 0);
-	if (!dmareq) {
-		dev_err(&pdev->dev, "No DMA resource\n");
-		ret = -ENODEV;
-		goto err_clk_put;
+	if (pdev->dev.of_node) {
+		if (of_property_read_u32(pdev->dev.of_node, "dma-channel", &dma_channel)) {
+			dev_err(&pdev->dev, "DMA-channel property not found\n");
+			ret = -ENODEV;
+			goto err_clk_put;
+		}
+	} else {
+		dmareq = platform_get_resource(pdev, IORESOURCE_DMA, 0);
+		if (!dmareq) {
+			dev_err(&pdev->dev, "No DMA resource\n");
+			ret = -ENODEV;
+			goto err_clk_put;
+		}
+		dma_channel = dmareq->start;
 	}
 
 	memregion = request_mem_region(mem->start, resource_size(mem),
@@ -427,12 +438,12 @@ static __devinit int tegra_i2s_platform_probe(struct platform_device *pdev)
 	i2s->capture_dma_data.addr = mem->start + TEGRA_I2S_FIFO2;
 	i2s->capture_dma_data.wrap = 4;
 	i2s->capture_dma_data.width = 32;
-	i2s->capture_dma_data.req_sel = dmareq->start;
+	i2s->capture_dma_data.req_sel = dma_channel;
 
 	i2s->playback_dma_data.addr = mem->start + TEGRA_I2S_FIFO1;
 	i2s->playback_dma_data.wrap = 4;
 	i2s->playback_dma_data.width = 32;
-	i2s->playback_dma_data.req_sel = dmareq->start;
+	i2s->playback_dma_data.req_sel = dma_channel;
 
 	i2s->reg_ctrl = TEGRA_I2S_CTRL_FIFO_FORMAT_PACKED;
 
@@ -480,10 +491,22 @@ static int __devexit tegra_i2s_platform_remove(struct platform_device *pdev)
 	return 0;
 }
 
+#if defined(CONFIG_OF)
+/* Match table for of_platform binding */
+static const struct of_device_id tegra_i2s_of_match[] __devinitconst = {
+	{ .compatible = "nvidia,tegra20-i2s", },
+	{},
+};
+MODULE_DEVICE_TABLE(of, tegra_i2s_of_match);
+#else
+#define tegra_i2s_of_match NULL
+#endif
+
 static struct platform_driver tegra_i2s_driver = {
 	.driver = {
 		.name = DRV_NAME,
 		.owner = THIS_MODULE,
+		.of_match_table = tegra_i2s_of_match,
 	},
 	.probe = tegra_i2s_platform_probe,
 	.remove = __devexit_p(tegra_i2s_platform_remove),
