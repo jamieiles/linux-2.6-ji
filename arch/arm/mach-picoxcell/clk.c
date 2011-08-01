@@ -167,6 +167,49 @@ int clk_set_parent(struct clk *clk, struct clk *parent)
 }
 EXPORT_SYMBOL_GPL(clk_set_parent);
 
+struct fixed_clk {
+	struct clk	clk;
+	unsigned long	rate;
+};
+
+static inline struct fixed_clk *to_fixed_clk(struct clk *clk)
+{
+	return container_of(clk, struct fixed_clk, clk);
+}
+
+static unsigned long fixed_clk_get_rate(struct clk *clk)
+{
+	struct fixed_clk *fixed = to_fixed_clk(clk);
+
+	return fixed->rate;
+}
+
+static const struct clk_ops fixed_clk_ops = {
+	.get_rate	= fixed_clk_get_rate,
+};
+
+static void __init picoxcell_add_fixed_clk(struct device_node *np)
+{
+	struct fixed_clk *clk;
+	u32 rate;
+
+	if (of_property_read_u32(np, "clock-frequency", &rate)) {
+		pr_err("no clock-frequency for %s\n", np->full_name);
+		return;
+	}
+
+	clk = kzalloc(sizeof(*clk), GFP_KERNEL);
+	if (!clk)
+		panic("unable to allocate clk for %s\n", np->full_name);
+
+	clk->clk.ops = &fixed_clk_ops;
+	clk->clk.name = np->name;
+	clk->clk.of_node = np;
+	clk->rate = rate;
+
+	picoxcell_clk_add(&clk->clk);
+}
+
 static struct clk *picoxcell_find_clk(struct device_node *np)
 {
 	struct clk *clk;
@@ -202,6 +245,10 @@ static void picoxcell_build_clk_tree(void)
 }
 
 static const struct of_device_id picoxcell_clk_match[] = {
+	{
+		.compatible = "fixed-clock",
+		.data = picoxcell_add_fixed_clk,
+	},
 	{ /* Sentinel */ }
 };
 
