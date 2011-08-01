@@ -19,6 +19,7 @@
 #include <linux/err.h>
 #include <linux/clk.h>
 #include <linux/io.h>
+#include <linux/of_platform.h>
 #include <linux/leds.h>
 #include <linux/gpio.h>
 #include <linux/input.h>
@@ -387,6 +388,9 @@ static int __init omap3_beagle_i2c_init(void)
 	/* Bus 3 is attached to the DVI port where devices like the pico DLP
 	 * projector don't work reliably with 400kHz */
 	omap_register_i2c_bus(3, 100, beagle_i2c_eeprom, ARRAY_SIZE(beagle_i2c_eeprom));
+#ifdef CONFIG_OF
+	omap_register_i2c_bus(2, 100, NULL, 0);
+#endif /* CONFIG_OF */
 	return 0;
 }
 
@@ -527,6 +531,10 @@ static void __init beagle_opp_init(void)
 
 static void __init omap3_beagle_init(void)
 {
+#ifdef CONFIG_OF
+	of_platform_prepare(NULL, NULL);
+#endif /* CONFIG_OF */
+
 	omap3_mux_init(board_mux, OMAP_PACKAGE_CBB);
 	omap3_beagle_init_rev();
 	omap3_beagle_i2c_init();

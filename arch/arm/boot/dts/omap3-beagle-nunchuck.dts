@@ -1,0 +1,19 @@
+/include/ "omap3-beagle.dts"
+
+/ {
+	i2c@48072000 {
+		compatible = "ti,omap3-i2c";
+		reg = <0x48072000 0x80>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		eeprom@50 {
+			compatible = "at,at24c01";
+			reg = < 0x50 >;
+		};
+		joystick@52 {
+			compatible = "sparkfun,wiichuck";
+			reg = < 0x52 >;
+		};
+	};
+};
