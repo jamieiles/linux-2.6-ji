@@ -239,11 +239,24 @@ static int __devexit tegra_das_remove(struct platform_device *pdev)
 	return 0;
 }
 
+#if defined(CONFIG_OF)
+/* Match table for of_platform binding */
+static const struct of_device_id tegra_das_of_match[] __devinitconst = {
+	{ .compatible = "nvidia,tegra20-das", },
+	{},
+};
+MODULE_DEVICE_TABLE(of, tegra_das_of_match);
+#else
+#define tegra_das_of_match NULL
+#endif
+
+
 static struct platform_driver tegra_das_driver = {
 	.probe = tegra_das_probe,
 	.remove = __devexit_p(tegra_das_remove),
 	.driver = {
 		.name = DRV_NAME,
+		.of_match_table = tegra_das_of_match,
 	},
 };
 
