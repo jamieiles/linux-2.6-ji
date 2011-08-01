@@ -25,3 +25,15 @@ VIC required properties:
       bank of the VIC that generates IRQ's 0->31 and the second tuple handles
       IRQ's 32->63.
     - #interrupt-cells : Must be 1.
+
+Fixed Clocks
+------------
+
+Fixed clock required properties:
+    - compatible = "fixed-clock".
+    - clock-outputs : Comma separated list of names of clock outputs.
+    - clock-frequency : The rate of the clock output in Hz.
+
+Fixed clock optional properties:
+    - ref-clock : The parent of the clock.  Must be in the form of <&phandle>,
+      "output name".
