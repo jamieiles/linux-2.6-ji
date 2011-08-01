@@ -61,3 +61,16 @@ PC3X3 gated clock optional properties:
       "output name".
     - picochip,clk-no-disable : Don't ever disable the clock.  This is required
       for memory controllers etc that don't have a driver associated with them.
+
+PC3X3 PLLs
+----------
+
+PC3X3 PLL required properties:
+    - compatible : "picochip,pc3x3-pll".
+    - picochip,min-freq : The minimum output frequency for the PLL in Hz.
+    - picochip,max-freq : The maximum output frequency for the PLL in Hz.
+    - clock-outputs : Comma separated list of names of clock outputs.
+
+PC3X3 PLL optional properties:
+    - ref-clock : The parent of the clock.  Must be in the form of <&phandle>,
+      "output name".
