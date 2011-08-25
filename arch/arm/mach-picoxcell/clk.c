@@ -81,6 +81,15 @@ void picoxcell_disable_unused_clks(void)
 			clk->ops->disable(clk);
 }
 
+void picoxcell_enable_clks_for_reset(void)
+{
+	struct clk *clk;
+
+	list_for_each_entry(clk, &picoxcell_clks, head)
+		if (clk->ops->enable)
+			clk->ops->enable(clk);
+}
+
 unsigned long clk_get_rate(struct clk *clk)
 {
 	return clk->ops->get_rate ? clk->ops->get_rate(clk) : -EOPNOTSUPP;
