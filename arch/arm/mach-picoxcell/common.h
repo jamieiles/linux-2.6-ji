@@ -15,6 +15,5 @@
 extern struct sys_timer picoxcell_timer;
 extern void picoxcell_map_io(void);
 extern void picoxcell_scan_clocks(void);
-extern void picoxcell_disable_unused_clks(void);
 
 #endif /* __PICOXCELL_COMMON_H__ */

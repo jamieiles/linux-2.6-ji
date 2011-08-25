@@ -249,6 +249,7 @@ EXPORT_SYMBOL_GPL(clk_get_parent);
 int clk_set_parent(struct clk *clk, struct clk *parent)
 {
 	/* not yet implemented */
+	clk->parent = parent;
 	return -ENOSYS;
 }
 EXPORT_SYMBOL_GPL(clk_set_parent);

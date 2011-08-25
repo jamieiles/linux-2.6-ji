@@ -168,7 +168,7 @@ struct clk *clk_register(struct device *dev, const struct clk_hw_ops *ops,
  */
 static inline int clk_unregister(struct clk *clk)
 {
-	return -ENOTSUPP;
+	return -EOPNOTSUPP;
 }
 
 #else /* !CONFIG_GENERIC_CLK */

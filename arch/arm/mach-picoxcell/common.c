@@ -25,7 +25,6 @@ static void __init picoxcell_init_machine(void)
 {
 	picoxcell_scan_clocks();
 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
-	picoxcell_disable_unused_clks();
 }
 
 static const char *picoxcell_dt_match[] = {

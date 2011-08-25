@@ -42,85 +42,77 @@
 			#size-cells = <0>;
 			reg = <0x800a0048 4>;
 			compatible = "picochip,pc3x3-clk-gate";
+			clock-frequency = <200000000>;
+			clock-outputs = "ref";
 
 			tzprot_clk: clock@0 {
 				compatible = "picochip,pc3x3-gated-clk";
 				clock-outputs = "bus";
 				picochip,clk-disable-bit = <0>;
-				clock-frequency = <200000000>;
-				ref-clock = <&ref_clk>, "ref";
+				ref-clock = <&clkgate>, "ref";
 			};
 
 			spi_clk: clock@1 {
 				compatible = "picochip,pc3x3-gated-clk";
 				clock-outputs = "bus";
 				picochip,clk-disable-bit = <1>;
-				clock-frequency = <200000000>;
-				ref-clock = <&ref_clk>, "ref";
+				ref-clock = <&clkgate>, "ref";
 			};
 
 			dmac0_clk: clock@2 {
 				compatible = "picochip,pc3x3-gated-clk";
 				clock-outputs = "bus";
 				picochip,clk-disable-bit = <2>;
-				clock-frequency = <200000000>;
-				ref-clock = <&ref_clk>, "ref";
+				ref-clock = <&clkgate>, "ref";
 			};
 
 			dmac1_clk: clock@3 {
 				compatible = "picochip,pc3x3-gated-clk";
 				clock-outputs = "bus";
 				picochip,clk-disable-bit = <3>;
-				clock-frequency = <200000000>;
-				ref-clock = <&ref_clk>, "ref";
+				ref-clock = <&clkgate>, "ref";
 			};
 
 			ebi_clk: clock@4 {
 				compatible = "picochip,pc3x3-gated-clk";
 				clock-outputs = "bus";
 				picochip,clk-disable-bit = <4>;
-				clock-frequency = <200000000>;
-				ref-clock = <&ref_clk>, "ref";
+				ref-clock = <&clkgate>, "ref";
 			};
 
 			ipsec_clk: clock@5 {
 				compatible = "picochip,pc3x3-gated-clk";
 				clock-outputs = "bus";
 				picochip,clk-disable-bit = <5>;
-				clock-frequency = <200000000>;
-				ref-clock = <&ref_clk>, "ref";
+				ref-clock = <&clkgate>, "ref";
 			};
 
 			l2_clk: clock@6 {
 				compatible = "picochip,pc3x3-gated-clk";
 				clock-outputs = "bus";
 				picochip,clk-disable-bit = <6>;
-				clock-frequency = <200000000>;
-				ref-clock = <&ref_clk>, "ref";
+				ref-clock = <&clkgate>, "ref";
 			};
 
 			trng_clk: clock@7 {
 				compatible = "picochip,pc3x3-gated-clk";
 				clock-outputs = "bus";
 				picochip,clk-disable-bit = <7>;
-				clock-frequency = <200000000>;
-				ref-clock = <&ref_clk>, "ref";
+				ref-clock = <&clkgate>, "ref";
 			};
 
 			fuse_clk: clock@8 {
 				compatible = "picochip,pc3x3-gated-clk";
 				clock-outputs = "bus";
 				picochip,clk-disable-bit = <8>;
-				clock-frequency = <200000000>;
-				ref-clock = <&ref_clk>, "ref";
+				ref-clock = <&clkgate>, "ref";
 			};
 
 			otp_clk: clock@9 {
 				compatible = "picochip,pc3x3-gated-clk";
 				clock-outputs = "bus";
 				picochip,clk-disable-bit = <9>;
-				clock-frequency = <200000000>;
-				ref-clock = <&ref_clk>, "ref";
+				ref-clock = <&clkgate>, "ref";
 			};
 		};
 
