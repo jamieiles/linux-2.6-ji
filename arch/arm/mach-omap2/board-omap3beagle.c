@@ -19,6 +19,7 @@
 #include <linux/err.h>
 #include <linux/clk.h>
 #include <linux/io.h>
+#include <linux/of_platform.h>
 #include <linux/leds.h>
 #include <linux/gpio.h>
 #include <linux/input.h>
@@ -387,6 +388,9 @@ static int __init omap3_beagle_i2c_init(void)
 	/* Bus 3 is attached to the DVI port where devices like the pico DLP
 	 * projector don't work reliably with 400kHz */
 	omap_register_i2c_bus(3, 100, beagle_i2c_eeprom, ARRAY_SIZE(beagle_i2c_eeprom));
+#ifdef CONFIG_OF
+	omap_register_i2c_bus(2, 100, NULL, 0);
+#endif /* CONFIG_OF */
 	return 0;
 }
 
@@ -524,6 +528,10 @@ static void __init beagle_opp_init(void)
 
 static void __init omap3_beagle_init(void)
 {
+#ifdef CONFIG_OF
+	of_platform_prepare(NULL, NULL);
+#endif /* CONFIG_OF */
+
 	omap3_mux_init(board_mux, OMAP_PACKAGE_CBB);
 	omap3_beagle_init_rev();
 	omap3_beagle_i2c_init();
@@ -555,6 +563,11 @@ static void __init omap3_beagle_init(void)
 	beagle_opp_init();
 }
 
+static const char *omap3_beagle_dt_match[] __initconst = {
+	"ti,omap3-beagle",
+	NULL
+};
+
 MACHINE_START(OMAP3_BEAGLE, "OMAP3 Beagle Board")
 	/* Maintainer: Syed Mohammed Khasim - http://beagleboard.org */
 	.boot_params	= 0x80000100,
@@ -564,4 +577,5 @@ MACHINE_START(OMAP3_BEAGLE, "OMAP3 Beagle Board")
 	.init_irq	= omap3_beagle_init_irq,
 	.init_machine	= omap3_beagle_init,
 	.timer		= &omap3_secure_timer,
+	.dt_compat	= omap3_beagle_dt_match,
 MACHINE_END

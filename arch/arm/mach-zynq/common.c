@@ -39,12 +39,22 @@ static struct of_device_id zynq_of_bus_ids[] __initdata = {
 	{}
 };
 
+static struct of_device_id gic_match[] = {
+	{ .compatible = "arm,gic", },
+	{}
+};
+
 /**
  * xilinx_init_machine() - System specific initialization, intended to be
  *			   called from board specific initialization.
  */
-static void __init xilinx_init_machine(void)
+void __init xilinx_init_machine(void)
 {
+	struct device_node *node = of_find_matching_node(NULL, gic_match);
+
+	if (node)
+		of_irq_domain_add_simple(node, 0, NR_IRQS);
+
 #ifdef CONFIG_CACHE_L2X0
 	/*
 	 * 64KB way size, 8-way associativity, parity disabled

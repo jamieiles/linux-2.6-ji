@@ -1864,10 +1864,9 @@ static struct gpio_chip wm8903_template_chip = {
 	.can_sleep		= 1,
 };
 
-static void wm8903_init_gpio(struct snd_soc_codec *codec)
+static void wm8903_init_gpio(struct snd_soc_codec *codec, struct wm8903_platform_data *pdata)
 {
 	struct wm8903_priv *wm8903 = snd_soc_codec_get_drvdata(codec);
-	struct wm8903_platform_data *pdata = dev_get_platdata(codec->dev);
 	int ret;
 
 	wm8903->gpio_chip = wm8903_template_chip;
@@ -1878,6 +1877,8 @@ static void wm8903_init_gpio(struct snd_soc_codec *codec)
 		wm8903->gpio_chip.base = pdata->gpio_base;
 	else
 		wm8903->gpio_chip.base = -1;
+
+	wm8903->gpio_chip.of_node = codec->dev->of_node;
 
 	ret = gpiochip_add(&wm8903->gpio_chip);
 	if (ret != 0)
@@ -1906,7 +1907,9 @@ static void wm8903_free_gpio(struct snd_soc_codec *codec)
 static int wm8903_probe(struct snd_soc_codec *codec)
 {
 	struct wm8903_platform_data *pdata = dev_get_platdata(codec->dev);
+	struct wm8903_platform_data lpdata;
 	struct wm8903_priv *wm8903 = snd_soc_codec_get_drvdata(codec);
+	const unsigned int *prop;
 	int ret, i;
 	int trigger, irq_pol;
 	u16 val;
@@ -1931,6 +1934,25 @@ static int wm8903_probe(struct snd_soc_codec *codec)
 		 (val & WM8903_CHIP_REV_MASK) + 'A');
 
 	wm8903_reset(codec);
+
+	if (!pdata && codec->dev->of_node) {
+		lpdata.irq_active_low = 0;
+		lpdata.micdet_cfg = 0;
+		lpdata.micdet_delay = 100;
+		lpdata.gpio_base = 0;
+		for (i = 0; i < 5; i++)
+			lpdata.gpio_cfg[i] = WM8903_GPIO_NO_CONFIG;
+
+		of_property_read_u32(codec->dev->of_node, "irq-active-low", &lpdata.irq_active_low);
+		of_property_read_u32(codec->dev->of_node, "micdet-cfg", &lpdata.micdet_cfg);
+
+		prop = of_get_property(codec->dev->of_node, "gpio-cfg", NULL);
+		if (prop)
+			for (i = 0; i < WM8903_NUM_GPIO; i++)
+				lpdata.gpio_cfg[i] = be32_to_cpu(prop[i]);
+
+		pdata = &lpdata;
+	}
 
 	/* Set up GPIOs and microphone detection */
 	if (pdata) {
@@ -2038,7 +2060,7 @@ static int wm8903_probe(struct snd_soc_codec *codec)
 	snd_soc_add_controls(codec, wm8903_snd_controls,
 				ARRAY_SIZE(wm8903_snd_controls));
 
-	wm8903_init_gpio(codec);
+	wm8903_init_gpio(codec, pdata);
 
 	return ret;
 }
@@ -2074,6 +2096,7 @@ static struct snd_soc_codec_driver soc_codec_dev_wm8903 = {
 };
 
 #if defined(CONFIG_I2C) || defined(CONFIG_I2C_MODULE)
+
 static __devinit int wm8903_i2c_probe(struct i2c_client *i2c,
 				      const struct i2c_device_id *id)
 {
@@ -2101,6 +2124,17 @@ static __devexit int wm8903_i2c_remove(struct i2c_client *client)
 	return 0;
 }
 
+#if defined(CONFIG_OF)
+/* Match table for of_platform binding */
+static const struct of_device_id wm8903_of_match[] __devinitconst = {
+        { .compatible = "wlf,wm8903", },
+        {},
+};
+MODULE_DEVICE_TABLE(of, wm8903_of_match);
+#else
+#define wm8903_of_match NULL
+#endif
+
 static const struct i2c_device_id wm8903_i2c_id[] = {
 	{ "wm8903", 0 },
 	{ }
@@ -2111,6 +2145,7 @@ static struct i2c_driver wm8903_i2c_driver = {
 	.driver = {
 		.name = "wm8903",
 		.owner = THIS_MODULE,
+		.of_match_table = wm8903_of_match,
 	},
 	.probe =    wm8903_i2c_probe,
 	.remove =   __devexit_p(wm8903_i2c_remove),

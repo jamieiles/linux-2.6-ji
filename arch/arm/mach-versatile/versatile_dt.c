@@ -24,13 +24,47 @@
 #include <linux/init.h>
 #include <linux/of_irq.h>
 #include <linux/of_platform.h>
+#include <linux/of_clk.h>
+#include <linux/slab.h>
+
+#include <mach/hardware.h>
+#include <mach/clkdev.h>
+#include <asm/irq.h>
 #include <asm/mach-types.h>
 #include <asm/mach/arch.h>
 
 #include "core.h"
 
+/* Scan for fixed clocks */
+static struct clk *versatile_dt_clk_get(struct device_node *np,
+					const char *output_id, void *data)
+{
+	return data;
+}
+
 static void __init versatile_dt_init(void)
 {
+	struct device_node *node;
+	struct clk *clk;
+	int rc;
+
+	for_each_compatible_node(node, NULL, "fixed-clock") {
+		u32 rate;
+		if (of_property_read_u32(node, "clock-frequency", &rate))
+			continue;
+
+		clk = kzalloc(sizeof(*clk), GFP_KERNEL);
+		if (!clk)
+			panic("out of memory\n");
+		clk->rate = rate;
+
+		rc = of_clk_add_provider(node, versatile_dt_clk_get, clk);
+		if (rc) {
+			kfree(clk);
+			pr_err("error adding fixed clk %s\n", node->name);
+		}
+	}
+
 	of_platform_populate(NULL, of_default_bus_match_table,
 			     versatile_auxdata_lookup, NULL);
 }

@@ -45,13 +45,18 @@ struct of_dev_auxdata {
 	char *compatible;
 	resource_size_t phys_addr;
 	char *name;
+	int id;
 	void *platform_data;
 };
 
 /* Macro to simplify populating a lookup table */
 #define OF_DEV_AUXDATA(_compat,_phys,_name,_pdata) \
 	{ .compatible = _compat, .phys_addr = _phys, .name = _name, \
-	  .platform_data = _pdata }
+	  .id = -1, .platform_data = _pdata }
+
+#define OF_DEV_AUXDATA_ID(_compat,_phys,_name,_id,_pdata) \
+	{ .compatible = _compat, .phys_addr = _phys, .name = _name, \
+	  .id = _id, .platform_data = _pdata }
 
 /**
  * of_platform_driver - Legacy of-aware driver for platform devices.
@@ -88,6 +93,8 @@ extern struct platform_device *of_platform_device_create(struct device_node *np,
 						   const char *bus_id,
 						   struct device *parent);
 
+extern void of_platform_prepare(struct device_node *root,
+				const struct of_device_id *matches);
 extern int of_platform_bus_probe(struct device_node *root,
 				 const struct of_device_id *matches,
 				 struct device *parent);

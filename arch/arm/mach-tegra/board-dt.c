@@ -49,6 +49,19 @@ void harmony_pinmux_init(void);
 void seaboard_pinmux_init(void);
 
 
+/*
+ * The pcm device doesn't appear to be associated with any specific hardware.
+ * It appears as if this device just sets up streaming between the exisitng
+ * devices. Becuase of this, it doesn't make sense to put this pcm_device in
+ * the device tree - there is no real device here.
+ *
+ * We continue to use the old static initialization for this device until we
+ * have a better initialization method.
+ */
+static struct platform_device *tegra20_devices[] __initdata = {
+	&tegra_pcm_device,
+};
+
 struct of_dev_auxdata tegra20_auxdata_lookup[] __initdata = {
 	OF_DEV_AUXDATA("nvidia,tegra20-sdhci", TEGRA_SDMMC1_BASE, "sdhci-tegra.0", NULL),
 	OF_DEV_AUXDATA("nvidia,tegra20-sdhci", TEGRA_SDMMC2_BASE, "sdhci-tegra.1", NULL),
@@ -58,8 +71,8 @@ struct of_dev_auxdata tegra20_auxdata_lookup[] __initdata = {
 	OF_DEV_AUXDATA("nvidia,tegra20-i2c", TEGRA_I2C2_BASE, "tegra-i2c.1", NULL),
 	OF_DEV_AUXDATA("nvidia,tegra20-i2c", TEGRA_I2C3_BASE, "tegra-i2c.2", NULL),
 	OF_DEV_AUXDATA("nvidia,tegra20-i2c", TEGRA_DVC_BASE, "tegra-i2c.3", NULL),
-	OF_DEV_AUXDATA("nvidia,tegra20-i2s", TEGRA_I2S1_BASE, "tegra-i2s.0", NULL),
-	OF_DEV_AUXDATA("nvidia,tegra20-i2s", TEGRA_I2S1_BASE, "tegra-i2s.1", NULL),
+	OF_DEV_AUXDATA_ID("nvidia,tegra20-i2s", TEGRA_I2S1_BASE, "tegra-i2s.0", 0, NULL),
+	OF_DEV_AUXDATA_ID("nvidia,tegra20-i2s", TEGRA_I2S1_BASE, "tegra-i2s.1", 1, NULL),
 	OF_DEV_AUXDATA("nvidia,tegra20-das", TEGRA_APB_MISC_DAS_BASE, "tegra-das", NULL),
 	{}
 };
@@ -89,12 +102,21 @@ static void __init tegra_dt_init(void)
 	if (node)
 		irq_domain_add_simple(node, INT_GIC_BASE);
 
+	/*
+	 * Before registering devices; tell Linux about which device nodes
+	 * are intended to be registered so that it doesn't create devices
+	 * for the statically registered ones
+	 */
+	of_platform_prepare(NULL, tegra_dt_match_table);
+
 	tegra_clk_init_from_table(tegra_dt_clk_init_table);
 
 	if (of_machine_is_compatible("nvidia,harmony"))
 		harmony_pinmux_init();
 	else if (of_machine_is_compatible("nvidia,seaboard"))
 		seaboard_pinmux_init();
+
+	platform_add_devices(tegra20_devices, ARRAY_SIZE(tegra20_devices));
 
 	/*
 	 * Finished with the static registrations now; fill in the missing

@@ -28,6 +28,62 @@
 #include "base.h"
 #include "power/power.h"
 
+/**
+ * deferred_probe_work_func() - Retry probing devices in the deferred list.
+ */
+static DEFINE_MUTEX(deferred_probe_mutex);
+static LIST_HEAD(deferred_probe_list);
+static void deferred_probe_work_func(struct work_struct *work)
+{
+	struct device *dev;
+	/*
+	 * This bit is tricky.  We want to process every device in the
+	 * deferred list, but devices can be removed from the list at any
+	 * time while inside this for-each loop.  There are two things that
+	 * need to be protected against:
+	 * - if the device is removed from the deferred_probe_list, then we
+	 *   loose our place in the loop.  Since any device can be removed
+	 *   asynchronously, list_for_each_entry_safe() wouldn't make things
+	 *   much better.  Simplest solution is to restart walking the list
+	 *   whenever the current device gets removed.  Not the most efficient,
+	 *   but is simple to implement and easy to audit for correctness.
+	 * - if the device is unregistered, and freed, then there is a risk
+	 *   of a null pointer dereference.  This code uses get/put_device()
+	 *   to ensure the device cannot disappear from under our feet.
+	 */
+	mutex_lock(&deferred_probe_mutex);
+	list_for_each_entry(dev, &deferred_probe_list, deferred_probe) {
+		bool removed;
+		get_device(dev);
+		mutex_unlock(&deferred_probe_mutex);
+
+		bus_probe_device(dev);
+
+		mutex_lock(&deferred_probe_mutex);
+		removed = list_empty(&dev->deferred_probe);
+		put_device(dev);
+		if (removed)
+			break;
+	}
+	mutex_unlock(&deferred_probe_mutex);
+}
+static DECLARE_WORK(deferred_probe_work, deferred_probe_work_func);
+
+static void driver_deferred_probe_add(struct device *dev)
+{
+	mutex_lock(&deferred_probe_mutex);
+	if (list_empty(&dev->deferred_probe))
+		list_add(&dev->deferred_probe, &deferred_probe_list);
+	mutex_unlock(&deferred_probe_mutex);
+}
+
+void driver_deferred_probe_del(struct device *dev)
+{
+	mutex_lock(&deferred_probe_mutex);
+	if (!list_empty(&dev->deferred_probe))
+		list_del_init(&dev->deferred_probe);
+	mutex_unlock(&deferred_probe_mutex);
+}
 
 static void driver_bound(struct device *dev)
 {
@@ -41,6 +97,8 @@ static void driver_bound(struct device *dev)
 		 __func__, dev->driver->name);
 
 	klist_add_tail(&dev->p->knode_driver, &dev->driver->p->klist_devices);
+	driver_deferred_probe_del(dev);
+	schedule_work(&deferred_probe_work);
 
 	if (dev->bus)
 		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
@@ -142,7 +200,11 @@ probe_failed:
 	driver_sysfs_remove(dev);
 	dev->driver = NULL;
 
-	if (ret != -ENODEV && ret != -ENXIO) {
+	if (ret == -EAGAIN) {
+		/* Driver requested deferred probing */
+		dev_info(dev, "Driver %s requests probe deferral\n", drv->name);
+		driver_deferred_probe_add(dev);
+	} else if (ret != -ENODEV && ret != -ENXIO) {
 		/* driver matched but the probe failed */
 		printk(KERN_WARNING
 		       "%s: probe of %s failed with error %d\n",

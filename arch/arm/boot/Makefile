@@ -57,6 +57,9 @@ $(obj)/zImage:	$(obj)/compressed/vmlinux FORCE
 	$(call if_changed,objcopy)
 	@echo '  Kernel: $@ is ready'
 
+$(obj)/zImage-dtb.%:	$(obj)/%.dtb $(obj)/zImage
+	cat $(obj)/zImage $< > $@
+
 endif
 
 # Rule to build device tree blobs
@@ -72,13 +75,20 @@ quiet_cmd_uimage = UIMAGE  $@
 
 ifeq ($(CONFIG_ZBOOT_ROM),y)
 $(obj)/uImage: LOADADDR=$(CONFIG_ZBOOT_ROM_TEXT)
+$(obj)/uImage-dtb.%: LOADADDR=$(CONFIG_ZBOOT_ROM_TEXT)
 else
 $(obj)/uImage: LOADADDR=$(ZRELADDR)
+$(obj)/uImage-dtb.%: LOADADDR=$(ZRELADDR)
 endif
 
 $(obj)/uImage: STARTADDR=$(LOADADDR)
+$(obj)/uImage-dtb.%: STARTADDR=$(LOADADDR)
 
 $(obj)/uImage:	$(obj)/zImage FORCE
+	$(call if_changed,uimage)
+	@echo '  Image $@ is ready'
+
+$(obj)/uImage-dtb.%:	$(obj)/zImage-dtb.% FORCE
 	$(call if_changed,uimage)
 	@echo '  Image $@ is ready'
 

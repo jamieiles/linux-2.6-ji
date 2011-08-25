@@ -1,0 +1,76 @@
+Picochip picoXcell device tree bindings.
+========================================
+
+Required root node properties:
+    - compatible:
+	- "picochip,pc7302-pc3x3" : PC7302 development board with PC3X3 device.
+	- "picochip,pc3x3" : picoXcell PC3X3 device based board.
+	- "picochip,pc3x2" : picoXcell PC3X2 device based board.
+
+Timers required properties:
+    - compatible = "picochip,pc3x2-timer"
+    - interrupts : The single IRQ line for the timer.
+    - clock-freq : The frequency in HZ of the timer.
+    - reg : The register bank for the timer.
+
+Note: two timers are required - one for the scheduler clock and one for the
+event tick/NOHZ.
+
+VIC required properties:
+    - compatible = "arm,pl192-vic-pair".
+    - interrupt-controller.
+    - reg : The register bank for the devices.  Picoxcell has two VIC's and the
+      IRQ outputs are wire-OR'd together so we effectively have a combined
+      controller that handles 64 IRQ's.  The first reg tuple is the register
+      bank of the VIC that generates IRQ's 0->31 and the second tuple handles
+      IRQ's 32->63.
+    - #interrupt-cells : Must be 1.
+
+Fixed Clocks
+------------
+
+Fixed clock required properties:
+    - compatible = "fixed-clock".
+    - clock-outputs : Comma separated list of names of clock outputs.
+    - clock-frequency : The rate of the clock output in Hz.
+
+Fixed clock optional properties:
+    - ref-clock : The parent of the clock.  Must be in the form of <&phandle>,
+      "output name".
+
+PC3X3 Gateable Clocks
+---------------------
+
+PC3X3 clock gate required properties:
+    - compatible = "picochip,pc3x3-clk-gate"
+    - #address-cells : must be equal to 1.
+    - #size-cells : must be equal to 0.
+    - reg : The register bank for the clock gate control.
+    - clock-outputs : Comma separated list of names of clock outputs.
+
+The individual clock outputs are represented as child nodes of the clock gate.
+
+PC3X3 gated clock required properties:
+    - compatible : "picochip,pc3x3-gated-clk".
+    - picochip,clk-disable-bit : The bit number in the clock gate control
+      register that must be set to disable the clock output.
+    - clock-frequency : The rate of the clock output in Hz.
+
+PC3X3 gated clock optional properties:
+    - ref-clock : The parent of the clock.  Must be in the form of <&phandle>,
+      "output name".
+    - picochip,clk-no-disable : Don't ever disable the clock.  This is required
+      for memory controllers etc that don't have a driver associated with them.
+
+PC3X3 PLLs
+----------
+
+PC3X3 PLL required properties:
+    - compatible : "picochip,pc3x3-pll".
+    - picochip,min-freq : The minimum output frequency for the PLL in Hz.
+    - picochip,max-freq : The maximum output frequency for the PLL in Hz.
+    - clock-outputs : Comma separated list of names of clock outputs.
+
+PC3X3 PLL optional properties:
+    - ref-clock : The parent of the clock.  Must be in the form of <&phandle>,
+      "output name".
