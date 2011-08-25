@@ -289,7 +289,7 @@
 			};
 
 			uart0: uart@30000 {
-				compatible = "ns8250dw";
+				compatible = "snps,dw-apb-uart";
 				reg = <0x30000 0x1000>;
 				interrupt-parent = <&vic1>;
 				interrupts = <10>;
@@ -299,7 +299,7 @@
 			};
 
 			uart1: uart@40000 {
-				compatible = "ns8250dw";
+				compatible = "snps,dw-apb-uart";
 				reg = <0x40000 0x1000>;
 				interrupt-parent = <&vic1>;
 				interrupts = <9>;
