@@ -132,7 +132,8 @@ struct clk_gate {
 	u8		bit_idx;
 };
 
-extern struct clk_hw_ops clk_gate_ops;
+extern struct clk_hw_ops clk_gate_set_enable_ops;
+extern struct clk_hw_ops clk_gate_set_disable_ops;
 
 #endif /* CONFIG_GENERIC_CLK_GATE */
 
