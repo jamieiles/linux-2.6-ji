@@ -15,7 +15,6 @@
 #ifndef _LINUX_IRQDOMAIN_H
 #define _LINUX_IRQDOMAIN_H
 
-#include <linux/irq.h>
 #include <linux/mod_devicetable.h>
 
 #ifdef CONFIG_IRQ_DOMAIN
