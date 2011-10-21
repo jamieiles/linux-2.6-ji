@@ -18,6 +18,7 @@
 #include <linux/spinlock.h>
 #include <linux/cpumask.h>
 #include <linux/gfp.h>
+#include <linux/irqdomain.h>
 #include <linux/irqreturn.h>
 #include <linux/irqnr.h>
 #include <linux/errno.h>
@@ -111,7 +112,6 @@ enum {
 };
 
 struct msi_desc;
-struct irq_domain;
 
 /**
  * struct irq_data - per irq and irq chip data passed down to chip functions
@@ -664,7 +664,7 @@ struct irq_chip_generic {
 	raw_spinlock_t		lock;
 	void __iomem		*reg_base;
 	unsigned int		irq_base;
-	unsigned int		irq_cnt;
+	struct irq_domain	domain;
 	u32			mask_cache;
 	u32			type_cache;
 	u32			polarity_cache;
