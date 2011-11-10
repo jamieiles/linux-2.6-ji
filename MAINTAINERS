@@ -5106,6 +5106,14 @@ L:	linux-mtd@lists.infradead.org
 S:	Maintained
 F:	drivers/mtd/devices/phram.c
 
+PICOXCELL SUPPORT
+M:	Jamie Iles <jamie@jamieiles.com>
+L:	linux-arm-kernel@lists.infradead.org (moderated for non-subscribers)
+S:	Maintained
+F:	arch/arm/mach-picoxcell
+F:	drivers/crypto/picoxcell*
+F:	drivers/char/hw_random/picoxcell*
+
 PIN CONTROL SUBSYSTEM
 M:	Linus Walleij <linus.walleij@linaro.org>
 S:	Maintained
