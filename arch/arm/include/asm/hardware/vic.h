@@ -41,12 +41,7 @@
 #define VIC_PL192_VECT_ADDR		0xF00
 
 #ifndef __ASSEMBLY__
-#include <linux/compiler.h>
-#include <linux/types.h>
-
-struct device_node;
 void vic_init(void __iomem *base, unsigned int irq_start, u32 vic_sources, u32 resume_sources);
-int vic_of_init(struct device_node *node, struct device_node *parent);
+#endif
 
-#endif /* __ASSEMBLY__ */
 #endif
