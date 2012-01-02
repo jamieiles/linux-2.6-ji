@@ -1,0 +1,17 @@
+Common Interrupt Binding Details
+
+For controllers that need to encode trigger types and senses, where possible
+it is encouraged to use the following encoding (a direct mapping of the
+IRQF_TRIGGER_* constants in include/linux/interrupt.h):
+
+	bits[3:0] trigger type and level flags.
+		1 = low-to-high edge triggered
+		2 = high-to-low edge triggered
+		4 = active high level-sensitive
+		8 = active low level-sensitive
+
+For example, an interrupt may be encoded as (with #interrupt-cells = <2>):
+
+	interrupts = <4 0x3>;
+
+to have interrupt 4 raise an interrupt on both edges of the input.
